@@ -9,5 +9,5 @@ ensure that the new PRINCE is not only a coherent and accessible software tool,
 but that it uses the available hardware intelligently to be as efficient as
 possible across a wide range of platforms.
 
-## Building PRINCE
+## Build Instructions
 You're on your own for now.

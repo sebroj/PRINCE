@@ -2,7 +2,7 @@
 The Plasma Rocket Instability Characterizer (PRINCE) is a software tool capable
 of conducting robust and customizable numerical characterizations of waves and
 instabilities in plasma thrusters. It currently exists as a prototype,
-implemented in the Wolfram Mathematica platform. This project is a complete
+implemented in the Wolfram Mathematica platform. This project will be a complete
 translation, enhancement, and optimization of PRINCE, with all its core
 procedures and mathematical algorithms written in native C++ code. This will
 ensure that the new PRINCE is not only a coherent and accessible software tool,

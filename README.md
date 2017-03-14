@@ -26,5 +26,6 @@ your terminal to verify this.
 3. __Install node-gyp GLOBALLY.__ The node-gyp package is a command line tool
 for building native addon modules for Node.js. This project uses it to build
 its native C++ code. Install it globally on your machine by running:
-
-  npm install -g node-gyp
+```
+npm install -g node-gyp
+```

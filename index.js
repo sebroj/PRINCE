@@ -1,3 +1,8 @@
+// Jose M Rico
+// March 8, 2017
+// index.js
+// Main script for index.html
+
 /* Toggle between hiding and showing the dropdown content */
 function toggleDropdown()
 {

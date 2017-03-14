@@ -1,3 +1,8 @@
+// Jose M Rico
+// March 8, 2017
+// main.js
+// Entry point for Electron application.
+
 const {app, BrowserWindow} = require('electron')
 const path = require('path')
 const url = require('url')

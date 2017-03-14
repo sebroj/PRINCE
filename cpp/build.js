@@ -1,3 +1,8 @@
+// Jose M Rico
+// March 14, 2017
+// build.js
+// Node script that builds the C++ codebase according to the current platform.
+
 if (process.platform == "win32")
 {
   console.log("Building C++ code for Windows");

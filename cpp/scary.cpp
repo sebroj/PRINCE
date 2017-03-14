@@ -1,3 +1,7 @@
+// Jose M Rico
+// March 12, 2017
+// scary.cpp
+
 #include <node.h>
 
 using v8::Exception;

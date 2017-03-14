@@ -2,3 +2,5 @@
 node_modules
 # Ignore build folder for native C++ code, as it might be platform-specific.
 cpp/build
+# Ignore MAC .DS_Store file
+.DS_Store

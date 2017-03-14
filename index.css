@@ -1,0 +1,82 @@
+* {
+  box-sizing: border-box;
+}
+
+/* ---------- DISPERSION RELATION SELECT ---------- */
+/* Dropdown Button */
+#dropdownButton {
+    background-color: #F9F9F9;
+    padding: 10px;
+    font-size: 14px;
+    border-style: solid;
+    border-width: 2px;
+    border-color: #444444;
+    cursor: pointer;
+}
+/* Dropdown button on hover & focus */
+#dropdownButton:hover, #dropdownButton:focus {
+    background-color: #EEEEEE;
+}
+
+/* The container <div> - needed to position the dropdown content */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    width: 300px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+/* Buttons inside the dropdown */
+.dropdown-content button {
+    width: 100%;
+    padding: 10px;
+    display: block;
+    background-color: #EEEEEE;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+}
+/* Change color of dropdown links on hover */
+.dropdown-content button:hover {
+  background-color: #DDDDDD
+}
+
+/* Show the dropdown menu */
+.show {
+  display:block;
+}
+
+/* ---------- INPUT FIELD ---------- */
+.inField {
+  width: 40%;
+  min-width:300px;
+  height: 100px;
+  border-style: solid;
+  border-width: 2px;
+  border-color: #444444;
+  margin-bottom: 10px;
+}
+
+.inFieldName {
+  width: 100%;
+  line-height: 30px;
+  text-align: center;
+  vertical-align: middle;
+}
+.inFieldType {
+  width: 100%;
+  line-height: 20px;
+  /*text-align: center;
+  vertical-align: middle;*/
+}
+.inFieldData {
+  width: 100%;
+  line-height: 20px;
+  /*text-align: center;
+  vertical-align: middle;*/
+}

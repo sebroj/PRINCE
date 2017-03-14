@@ -1,0 +1,5 @@
+Successfully built the Electron C++ addon with the following
+series of commands on Windows (starting with just the src and binding.gyp)
+
+node-gyp configure --target=1.6.2 --arch=x64 --dist-url=https://atom.io/download/electron
+node-gyp build --target=1.6.2 --arch=x64 --dist-url=https://atom.io/download/electron

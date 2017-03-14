@@ -53,8 +53,8 @@
 
 /* ---------- INPUT FIELD ---------- */
 .inField {
-  width: 40%;
-  min-width:300px;
+  /*width: 40%;*/
+  width: 300px;
   height: 100px;
   border-style: solid;
   border-width: 2px;

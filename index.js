@@ -3,6 +3,17 @@
 // index.js
 // Main script for index.html
 
+var inputFieldNames = [
+  "Electron Density",
+  "Electron Temperature",
+  "Neutral Density",
+  "Electric Potential",
+  "Radial Magnetic Field",
+  "Axial Magnetic Field",
+  "Azimuthal Magnetic Field",
+  "Axial Ion Velocity"
+];
+
 /* Toggle between hiding and showing the dropdown content */
 function toggleDropdown()
 {
@@ -26,7 +37,11 @@ function dispSelect(event)
 function fileChange(event)
 {
   const dialog = require("electron").remote.dialog;
-  var path = dialog.showOpenDialog({ properties: [ 'openFile' ] })[0];
+  var files = dialog.showOpenDialog({ properties: [ 'openFile' ] });
+  if (files == undefined)
+    return;
+
+  var path = files[0];
 
   var filename = path.replace(/^.*[\\\/]/, '')
   var inFieldFileName = $(event.target.parentNode).find(".inFieldFileName");
@@ -43,9 +58,21 @@ function doScaryThings()
 
 $(function()
 {
-  console.log("Node version: " + process.versions.node)
-  console.log("Chrome version: " + process.versions.chrome)
-  console.log("Electron version: " + process.versions.electron)
+  console.log("Starting PRINCE");
+  console.log("Node version: " + process.versions.node);
+  console.log("Chrome version: " + process.versions.chrome);
+  console.log("Electron version: " + process.versions.electron);
+
+  // Use input field prototype
+  var inField = $(".inField")[0];
+  for (var i = 0; i < inputFieldNames.length; i++)
+  {
+    var clone = inField.cloneNode(true);
+    clone.id = "inField" + i
+    inField.parentNode.appendChild(clone);
+    $(clone).find(".inFieldName")[0].textContent = inputFieldNames[i];
+  }
+  inField.parentNode.removeChild(inField);
 
   // Add dispersion relation selection callback to buttons.
   var dispButtons = $(".dispButton");

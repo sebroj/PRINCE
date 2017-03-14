@@ -3,21 +3,25 @@
 // build.js
 // Node script that builds the C++ codebase according to the current platform.
 
+function execCallback(err, stdout, stderr)
+{
+  if (err)
+    console.log(stderr);
+
+  console.log(stdout);
+}
+
+var exec = require("child_process").exec;
+
 if (process.platform == "win32")
 {
   console.log("Building C++ code for Windows");
-  var exec = require("child_process").exec;
-  exec("win_build_cpp.bat", function(err, stdout, stderr)
-  {
-    if (err)
-      console.log(stderr);
-
-    console.log(stdout);
-  });
+  // TODO check this (we're not in this directory)
+  exec("cpp/win_build_cpp.bat", execCallback);
 }
 
 if (process.platform == "darwin")
 {
   console.log("Building C++ code for Mac");
-  console.log("OOPS! Unimplemented...");
+  exec("cpp/mac_build_cpp.sh", execCallback);
 }

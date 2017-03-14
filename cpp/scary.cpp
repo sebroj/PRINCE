@@ -57,7 +57,7 @@ void procedure(const FunctionCallbackInfo<Value>& args)
   String::Utf8Value string(args[0]);
   const char* cstr = to_c_string(string);
 
-  int n = 100000000;
+  int n = 1000000;
   char* output = intense(&n);
 
   args.GetReturnValue().Set(String::NewFromUtf8(isolate, cstr));

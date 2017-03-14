@@ -10,4 +10,20 @@ but that it uses the available hardware intelligently to be as efficient as
 possible across a wide range of platforms.
 
 ## Build Instructions
-You're on your own for now.
+PRINCE uses the Electron framework for its GUI. Though it is a standalone
+application, it requires specific tools for building and testing.
+
+### Steps
+
+1. __Install Node.js.__ This process is straightforward. Simply download and run
+the installer for your platform at https://nodejs.org/en/. Node should have
+installed globally; run "node --version" on your terminal to verify this.
+
+2. __Make sure you have npm installed.__ NPM (Node Package Manager) should also
+have been installed globally by the Node.js installer. Run "npm --version" on
+your terminal to verify this.
+
+3. __Install node-gyp GLOBALLY.__ The node-gyp package is a command line tool
+for building native addon modules for Node.js. This project uses it to build
+its native C++ code. Install it globally on your machine by running:
+Markup : npm install -g node-gyp

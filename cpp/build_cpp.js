@@ -19,9 +19,12 @@ if (process.platform == "win32")
   // TODO check this (we're not in this directory)
   exec("cpp\\win_build_cpp.bat", execCallback);
 }
-
-if (process.platform == "darwin")
+else if (process.platform == "darwin")
 {
   console.log("Building C++ code for Mac");
   exec("cpp/mac_build_cpp.sh", execCallback);
+}
+else
+{
+  console.log("ERROR: Unsupported platform");
 }

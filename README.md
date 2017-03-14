@@ -42,7 +42,7 @@ instructions.
 1. __Clone or download this repository.__
 
 2. __Install Node modules.__ Navigate to the root directory of this project
-(the one with this README file), and run:
+(the one with this README file), and run
 ```
 npm install
 ```

@@ -19,7 +19,9 @@ const char* to_c_string(const String::Utf8Value& value)
 
 char* intense(int* n)
 {
-  for (int it = 0; it < 2; it++)
+  const int ITERATIONS = 1;
+
+  for (int it = 0; it < ITERATIONS; it++)
   {
     int N = *n;
     float* floats = new float[N];
@@ -57,7 +59,7 @@ void procedure(const FunctionCallbackInfo<Value>& args)
   String::Utf8Value string(args[0]);
   const char* cstr = to_c_string(string);
 
-  int n = 1000000;
+  int n = 2000000000;
   char* output = intense(&n);
 
   args.GetReturnValue().Set(String::NewFromUtf8(isolate, cstr));

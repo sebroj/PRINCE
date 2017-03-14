@@ -17,7 +17,7 @@ if (process.platform == "win32")
 {
   console.log("Building C++ code for Windows");
   // TODO check this (we're not in this directory)
-  exec("cpp/win_build_cpp.bat", execCallback);
+  exec("cpp\\win_build_cpp.bat", execCallback);
 }
 
 if (process.platform == "darwin")

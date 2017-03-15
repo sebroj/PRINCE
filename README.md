@@ -18,16 +18,16 @@ application, it requires specific tools for building and testing.
 1. __Install Node.js.__ This process is straightforward. Simply download and run
 the installer for your platform at https://nodejs.org/en/. Node should have
 installed globally; run the following command on your terminal to verify this:
-```
-node --version
-```
+    ```
+    node --version
+    ```
 
 2. __Install NPM.__ NPM (Node Package Manager) should have been installed
 globally by the Node.js installer. Check its version on your terminal to verify
 this:
-```
-npm --version
-```
+    ```
+    npm --version
+    ```
 
 3. __Install node-gyp GLOBALLY.__ The node-gyp package is a command line tool
 for building native addon modules for Node.js. This project uses it to build
@@ -43,21 +43,21 @@ instructions.
 
 2. __Install Node modules.__ Navigate to the root directory of this project
 (the one with this README file), and run
-```
-npm install
-```
-This will read the dependencies listed in the package.json file and download
-them to the current directory.
+    ```
+    npm install
+    ```
+    This will read the dependencies listed in the package.json file and download
+    them to the current directory.
 
 3. __Build C++ code.__ From the root directory, run
-```
-npm run build-cpp
-```
-This will execute the C++ build scripts for your platform and compile the C++
-code into a Node addon.
+    ```
+    npm run build-cpp
+    ```
+    This will execute the C++ build scripts for your platform and compile the
+    C++ code into a Node addon.
 
 4. __Test the application.__ From the root directory, run
-```
-npm start
-```
-This will start the application.
+    ```
+    npm start
+    ```
+    This will start the application.

@@ -49,35 +49,51 @@
       </div>
       <div id="other">
         <p>Other</p>
-        <!-- Input field prototype. This gets cloned for every input field
-              name in index.js. -->
-        <div class="inField">
-          <div class="inFieldName">
+        <!-- Parameter prototype. This gets cloned in index.js -->
+        <div class="parameter">
+          <div class="paramName">
             Input Field Name
           </div>
-          <div class="inFieldType">
+          <div class="paramDataType">
             <div style="display: inline-block;">
-              <input type="radio" name="dataType" value="0D">0D
-              <input type="radio" name="dataType" value="1D">1D
-              <input type="radio" name="dataType" value="2D">2D
+              <input type="radio" class="radio0D"> 0D
+              <input type="radio" class="radio1D"> 1D
+              <input type="radio" class="radio2D"> 2D
             </div>
           </div>
-          <div class="inFieldFormat">
+          <div class="paramDataValue">
             <div style="display: inline-block;">
-              <input type="radio" name="dataFormat" value="x">x
-              <input type="radio" name="dataFormat" value="y">y
-              <input type="radio" name="dataFormat" value="z">z
+              <div style="float:left; margin-right:5px;">
+                Value:
+              </div>
+              <form action="javascript:void(0);" style="display: inline-block">
+                <input type="text" class="paramValueField">
+                <input type="submit" class="submitHidden" style="display:none;">
+              </form>
             </div>
           </div>
-          <div class="inFieldData">
+          <div class="paramDataFormat">
+            <div class="format1D" style="display: inline-block;">
+              <input type="radio"> x
+              <input type="radio"> y
+              <input type="radio"> z
+            </div>
+            <div class="format2D" style="display: inline-block;">
+              <input type="radio"> x, y
+              <input type="radio"> x, z
+              <input type="radio"> y, z
+            </div>
+          </div>
+          <div class="paramDataFile">
             <div style="display: inline-block;">
-              <button class="inFieldFileButton">Select File</button>
-              <div class="inFieldFileName" style="float:right; margin-left:5px">
+              <button class="paramFileButton">Select File</button>
+              <div class="paramFilename">
                 No file selected
               </div>
             </div>
           </div>
         </div>
+        <!-- Parameter prototype END. -->
       </div>
       <button id="scary" onclick="doScaryThings()">DO SCARY THINGS</button>
     </div>

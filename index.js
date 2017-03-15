@@ -3,7 +3,8 @@
 // index.js
 // Main script for index.html
 
-var inputFieldNames = [
+// TODO: move this data out of here
+var parameterNames = [
   "Electron Density",
   "Electron Temperature",
   "Neutral Density",
@@ -13,8 +14,7 @@ var inputFieldNames = [
   "Azimuthal Magnetic Field",
   "Axial Ion Velocity"
 ];
-
-var requiredFields = {
+var requiredParams = {
   "Simplified Esipchuk-Tilinin":
     ["Electron Density",
     "Neutral Density",
@@ -39,36 +39,33 @@ var requiredFields = {
 /* Toggle between hiding and showing the dropdown content */
 function toggleDropdown()
 {
-  $("#dispDropdown").toggleClass("show");
+  $("#dispDropdown").toggle();
 }
 
-/* Dispersion relation has been selected */
+/* Dispersion relation has been selected. */
 function dispSelect(event)
 {
   // Name of dispersion relation selected.
-  dispName = $(event.target).text();
-
+  var dispersionName = $(event.target).text();
   // Update dropdown button text.
-  $("#dropdownButton").text(dispName);
+  $("#dropdownButton").text(dispersionName);
 
-  // Reorder input fields.
-  var fields = requiredFields[dispName];
-  var fieldIDs = [];
-  for (var i = 0; i < fields.length; i++)
-  {
-    var fieldID = inputFieldNames.indexOf(fields[i]);
-    fieldIDs.push(fieldID);
-  }
+  // Reorder plasma parameters.
+  var params = requiredParams[dispersionName];
+  var paramIDs = [];
+  for (var i = 0; i < params.length; i++)
+    paramIDs.push(parameterNames.indexOf(params[i]));
 
-  for (var i = 0; i < inputFieldNames.length; i++)
+  for (var i = 0; i < parameterNames.length; i++)
   {
-    if (fieldIDs.indexOf(i) >= 0)
-      $("#inField" + i).appendTo($("#required"));
+    if (paramIDs.indexOf(i) >= 0)
+      $("#parameter" + i).appendTo($("#required"));
     else
-      $("#inField" + i).appendTo($("#other"));
+      $("#parameter" + i).appendTo($("#other"));
   }
 }
 
+/* Input data file has been changed. */
 function fileChange(event)
 {
   const dialog = require("electron").remote.dialog;
@@ -76,11 +73,36 @@ function fileChange(event)
   if (files == undefined)
     return;
 
-  var path = files[0];
+  var filepath = files[0];
 
-  var filename = path.replace(/^.*[\\\/]/, '')
-  var inFieldFileName = $(event.target).parent().find(".inFieldFileName");
-  inFieldFileName[0].textContent = filename;
+  var filename = filepath.replace(/^.*[\\\/]/, '')
+  var paramFilename = $(event.target).parent().find(".paramFilename");
+  paramFilename[0].textContent = filename;
+}
+
+function param0D(event)
+{
+  var param = $(event.target).closest(".parameter");
+  param.find(".paramDataValue").show();
+  param.find(".format1D").hide();
+  param.find(".format2D").hide();
+  param.find(".paramDataFile").hide();
+}
+function param1D(event)
+{
+  var param = $(event.target).closest(".parameter");
+  param.find(".paramDataValue").hide();
+  param.find(".format1D").show();
+  param.find(".format2D").hide();
+  param.find(".paramDataFile").show();
+}
+function param2D(event)
+{
+  var param = $(event.target).closest(".parameter");
+  param.find(".paramDataValue").hide();
+  param.find(".format1D").hide();
+  param.find(".format2D").show();
+  param.find(".paramDataFile").show();
 }
 
 function doScaryThings()
@@ -97,34 +119,55 @@ $(function() {
   console.log("Chrome version: " + process.versions.chrome);
   console.log("Electron version: " + process.versions.electron);
 
-  // Use input field prototype
-  var inField = $(".inField");
-  for (var i = 0; i < inputFieldNames.length; i++)
+  // Generate plasma parameter divs.
+  var parameter = $(".parameter");
+  for (var i = 0; i < parameterNames.length; i++)
   {
-    var clone = inField.clone(true);
-    clone.attr("id", "inField" + i);
-    clone.appendTo(inField.parent());
-    clone.find(".inFieldName").text(inputFieldNames[i]);
+    var clone = parameter.clone(true);
+    clone.attr("id", "parameter" + i);
+    clone.appendTo(parameter.parent());
+    clone.find(".paramName").text(parameterNames[i]);
+    // Assign different names to each parameter's radio groups.
+    clone.find(".paramDataType").find("input").each(function() {
+      if ($(this).attr("type") == "radio")
+        $(this).attr("name", "dataType-" + i);
+    });
+    clone.find(".format1D").find("input").each(function() {
+      if ($(this).attr("type") == "radio")
+        $(this).attr("name", "format1D-" + i);
+    });
+    clone.find(".format2D").find("input").each(function() {
+      if ($(this).attr("type") == "radio")
+        $(this).attr("name", "format2D-" + i);
+    });
+
+    // Hide data input, since the data type is still unset.
+    clone.find(".paramDataValue").hide();
+    clone.find(".format1D").hide();
+    clone.find(".format2D").hide();
+    clone.find(".paramDataFile").hide();
   }
-  inField.remove();
+  parameter.remove();
 
-  $(".dispButton").each(function() {
-    $(this).click(dispSelect);
-  });
+  // Add click callbacks.
+  $(".dispButton").each(function() { $(this).click(dispSelect); });
+  $(".paramFileButton").each(function() { $(this).click(fileChange); });
 
-  $(".inFieldFileButton").each(function() {
-    $(this).click(fileChange);
+  $(".radio0D").each(function() { $(this).click(param0D); });
+  $(".radio1D").each(function() { $(this).click(param1D); });
+  $(".radio2D").each(function() { $(this).click(param2D); });
+
+  // Add sneaky lose-focus for 0-D input field.
+  $(".submitHidden").each(function() {
+    $(this).click(function() {
+      $(".paramValueField").each(function() { $(this).blur(); });
+    })
   });
 });
 
-window.onclick = function(event)
+$(window).click(function(event)
 {
   // Close the dropdown menu if the user clicks outside of it.
   if (!$(event.target).is("#dropdownButton"))
-  {
-    $(".dropdown-content").each(function() {
-      if ($(this).hasClass("show"))
-        $(this).removeClass("show");
-    });
-  }
-}
+    $(".dropdown-content").each(function() { $(this).hide(); });
+});

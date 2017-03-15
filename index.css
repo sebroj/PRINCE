@@ -46,30 +46,30 @@
   background-color: #DDDDDD
 }
 
-/* Show the dropdown menu */
-.show {
-  display:block;
-}
-
 /* ---------- INPUT FIELD ---------- */
-.inField {
+.parameter {
   /*width: 40%;*/
   width: 300px;
-  height: 100px;
+  height: 120px;
   border-style: solid;
   border-width: 2px;
   border-color: #444444;
   margin: 0 0 10px 0;
 }
 
-.inFieldName {
+.paramName {
   width: 100%;
   line-height: 30px;
   text-align: center;
   vertical-align: middle;
 }
-.inFieldType, .inFieldFormat, .inFieldData {
+.paramDataType, .paramDataFormat, .paramDataFile, .paramDataValue {
   width: 100%;
-  line-height: 20px;
+  height: 22px;
+  line-height: 22px;
   text-align: center;
+}
+.paramFilename {
+  float:right;
+  margin-left:5px;
 }

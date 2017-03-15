@@ -14,6 +14,10 @@ var inputFieldNames = [
   "Axial Ion Velocity"
 ];
 
+var parameters = {
+  "Simplified Esipchuk-Tilinin": ["Electron Density"]
+};
+
 /* Toggle between hiding and showing the dropdown content */
 function toggleDropdown()
 {

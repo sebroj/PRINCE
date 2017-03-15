@@ -59,7 +59,7 @@
   border-style: solid;
   border-width: 2px;
   border-color: #444444;
-  margin-bottom: 10px;
+  margin: 0 0 10px 0;
 }
 
 .inFieldName {
@@ -68,15 +68,8 @@
   text-align: center;
   vertical-align: middle;
 }
-.inFieldType {
+.inFieldType, .inFieldFormat, .inFieldData {
   width: 100%;
   line-height: 20px;
-  /*text-align: center;
-  vertical-align: middle;*/
-}
-.inFieldData {
-  width: 100%;
-  line-height: 20px;
-  /*text-align: center;
-  vertical-align: middle;*/
+  text-align: center;
 }

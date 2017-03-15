@@ -5,18 +5,33 @@
     <title>PRINCE</title>
     <link rel="stylesheet" href="index.css">
 
-    <!-- Insert this line above script imports  -->
-    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
-    <!-- normal script imports etc  -->
+    <!-- HACKYNESS FOR USING JQUERY WITH ELECTRON -->
+    <!-- Insert this before script imports  -->
+    <script>
+    if (typeof module === 'object') {
+      window.module = module;
+      module = undefined;
+    }
+    </script>
+
     <script type="text/javascript" src="extern/jquery-3.1.1.min.js"></script>
     <script type="text/javascript" src="index.js"></script>
-    <!-- Insert this line after script imports -->
-    <script>if (window.module) module = window.module;</script>
+
+    <!-- Insert this after script imports -->
+    <script>
+    if (window.module)
+      module = window.module;
+    </script>
+
   </head>
   <body>
-    <h1>PRINCE</h1>
-    <div class="input">
-      Dispersion relation:
+    <div id="title" style="text-align: center">
+      <h1>PRINCE</h1>
+    </div>
+    <div id="solverSettings"></div>
+    <div class="input" style="text-align: center">
+      <h2>Solver Settings</h2>
+      <p>Dispersion Relation</p>
       <!-- Dispersion relation dropdown list -->
       <div class="dropdown">
         <button id="dropdownButton" onclick="toggleDropdown()">-- Select --</button>
@@ -27,7 +42,7 @@
           <button class="dispButton">Damped warm Langmuir waves</button>
         </div>
       </div>
-      <h2>Input Fields</h2>
+      <h2>Plasma Parameters</h2>
       <p>Dev note:</p>
       <div class="required">
         <p>Required</p>
@@ -41,13 +56,26 @@
             Input Field Name
           </div>
           <div class="inFieldType">
-            <input type="radio" name="dataType" value="0D">0D
-            <input type="radio" name="dataType" value="1D">1D
-            <input type="radio" name="dataType" value="2D">2D
+            <div style="display: inline-block;">
+              <input type="radio" name="dataType" value="0D">0D
+              <input type="radio" name="dataType" value="1D">1D
+              <input type="radio" name="dataType" value="2D">2D
+            </div>
+          </div>
+          <div class="inFieldFormat">
+            <div style="display: inline-block;">
+              <input type="radio" name="dataFormat" value="x">x
+              <input type="radio" name="dataFormat" value="y">y
+              <input type="radio" name="dataFormat" value="z">z
+            </div>
           </div>
           <div class="inFieldData">
-            <button class="inFieldFileButton">Select File</button>
-            <div class="inFieldFileName">No file selected</div>
+            <div style="display: inline-block;">
+              <button class="inFieldFileButton">Select File</button>
+              <div class="inFieldFileName" style="float:right; margin-left:5px">
+                No file selected
+              </div>
+            </div>
           </div>
         </div>
       </div>

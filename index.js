@@ -14,28 +14,59 @@ var inputFieldNames = [
   "Axial Ion Velocity"
 ];
 
-var parameters = {
-  "Simplified Esipchuk-Tilinin": ["Electron Density"]
+var requiredFields = {
+  "Simplified Esipchuk-Tilinin":
+    ["Electron Density",
+    "Neutral Density",
+    "Electric Potential"],
+  "Long wavelength gradient drift":
+    ["Electron Density",
+    "Electron Temperature",
+    "Electric Potential",
+    "Azimuthal Magnetic Field",
+    "Axial Ion Velocity"],
+  "High-frequency ExB drift":
+    ["Electron Density",
+    "Radial Magnetic Field",
+    "Axial Magnetic Field",
+    "Axial Ion Velocity"],
+  "Damped warm Langmuir waves":
+    ["Electron Density",
+    "Electron Temperature",
+    "Neutral Density"]
 };
 
 /* Toggle between hiding and showing the dropdown content */
 function toggleDropdown()
 {
-  document.getElementById("dispDropdown").classList.toggle("show");
+  $("#dispDropdown").toggleClass("show");
 }
 
 /* Dispersion relation has been selected */
 function dispSelect(event)
 {
   // Name of dispersion relation selected.
-  dispName = event.target.textContent;
+  dispName = $(event.target).text();
 
   // Update dropdown button text.
-  dropdownButton = document.getElementById("dropdownButton");
-  dropdownButton.textContent = dispName;
+  $("#dropdownButton").text(dispName);
 
-  // TODO other things should happen here.
-  //  (input field layout re-ordering)
+  // Reorder input fields.
+  var fields = requiredFields[dispName];
+  var fieldIDs = [];
+  for (var i = 0; i < fields.length; i++)
+  {
+    var fieldID = inputFieldNames.indexOf(fields[i]);
+    fieldIDs.push(fieldID);
+  }
+
+  for (var i = 0; i < inputFieldNames.length; i++)
+  {
+    if (fieldIDs.indexOf(i) >= 0)
+      $("#inField" + i).appendTo($("#required"));
+    else
+      $("#inField" + i).appendTo($("#other"));
+  }
 }
 
 function fileChange(event)
@@ -48,7 +79,7 @@ function fileChange(event)
   var path = files[0];
 
   var filename = path.replace(/^.*[\\\/]/, '')
-  var inFieldFileName = $(event.target.parentNode).find(".inFieldFileName");
+  var inFieldFileName = $(event.target).parent().find(".inFieldFileName");
   inFieldFileName[0].textContent = filename;
 }
 
@@ -60,45 +91,40 @@ function doScaryThings()
   console.log("Finished scary things...");
 }
 
-$(function()
-{
+$(function() {
   console.log("Starting PRINCE");
   console.log("Node version: " + process.versions.node);
   console.log("Chrome version: " + process.versions.chrome);
   console.log("Electron version: " + process.versions.electron);
 
   // Use input field prototype
-  var inField = $(".inField")[0];
+  var inField = $(".inField");
   for (var i = 0; i < inputFieldNames.length; i++)
   {
-    var clone = inField.cloneNode(true);
-    clone.id = "inField" + i
-    inField.parentNode.appendChild(clone);
-    $(clone).find(".inFieldName")[0].textContent = inputFieldNames[i];
+    var clone = inField.clone(true);
+    clone.attr("id", "inField" + i);
+    clone.appendTo(inField.parent());
+    clone.find(".inFieldName").text(inputFieldNames[i]);
   }
-  inField.parentNode.removeChild(inField);
+  inField.remove();
 
-  // Add dispersion relation selection callback to buttons.
-  var dispButtons = $(".dispButton");
-  for (var i = 0; i < dispButtons.length; i++)
-    dispButtons[i].onclick = dispSelect;
+  $(".dispButton").each(function() {
+    $(this).click(dispSelect);
+  });
 
-  var inFieldFileButtons = $(".inFieldFileButton");
-  for (var i = 0; i < inFieldFileButtons.length; i++)
-    inFieldFileButtons[i].onclick = fileChange;
+  $(".inFieldFileButton").each(function() {
+    $(this).click(fileChange);
+  });
 });
 
 window.onclick = function(event)
 {
   // Close the dropdown menu if the user clicks outside of it.
-  if (!event.target.matches('#dropdownButton'))
+  if (!$(event.target).is("#dropdownButton"))
   {
-    var dropdowns = $(".dropdown-content");
-    for (var i = 0; i < dropdowns.length; i++)
-    {
-      var openDropdown = dropdowns[i];
-      if (openDropdown.classList.contains('show'))
-        openDropdown.classList.remove('show');
-    }
+    $(".dropdown-content").each(function() {
+      if ($(this).hasClass("show"))
+        $(this).removeClass("show");
+    });
   }
 }

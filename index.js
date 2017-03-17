@@ -75,9 +75,18 @@ function fileChange(event)
 
   var filepath = files[0];
 
-  var filename = filepath.replace(/^.*[\\\/]/, '')
+  var filename = filepath.replace(/^.*[\\\/]/, '');
   var paramFilename = $(event.target).parent().find(".paramFilename");
   paramFilename[0].textContent = filename;
+
+  var paramDataType = $(event.target).closest(".parameter").find(".paramDataType");
+  var checked = paramDataType.find("input:checked");
+  var dataDim = 1;
+  if (checked.attr("class") == "radio2D")
+    dataDim = 2;
+
+  const cppmain = require("./cpp/build/Release/main");
+  console.log(cppmain.load_file(filepath, dataDim));
 }
 
 function param0D(event)
@@ -107,10 +116,10 @@ function param2D(event)
 
 function doScaryThings()
 {
-  const scary = require("./cpp/build/Release/scary")
-  console.log("Starting scary things...");
-  console.log(scary.execute("DONE"))
-  console.log("Finished scary things...");
+  //const scary = require("./cpp/build/Release/scary");
+  //console.log("Starting scary things...");
+  //console.log(scary.execute("DONE"));
+  //console.log("Finished scary things...");
 }
 
 $(function() {

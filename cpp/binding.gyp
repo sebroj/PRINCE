@@ -1,8 +1,8 @@
 {
     "targets": [
         {
-            "target_name": "scary",
-            "sources": [ "scary.cpp" ]
+            "target_name": "main",
+            "sources": [ "main.cpp" ]
         }
     ]
 }

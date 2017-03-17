@@ -3,11 +3,13 @@
 // main.cpp
 
 #include <stdio.h>
+#include <array>
 #include <vector>
+#include <string>
 
 #include <node.h>
 
-#define MAX_LINE_SIZE 512
+#define CHAR_BUF_SIZE 256
 
 using v8::Exception;
 using v8::FunctionCallbackInfo;
@@ -20,20 +22,16 @@ using v8::Value;
 bool load_file_1d(const char* path)
 {
   printf("Load 1-D data from %s\n", path);
+  printf("UNIMPLEMENTED!");
 
   FILE* fp = fopen(path, "r");
   if (fp == NULL)
     return false;
 
-  std::vector<double[2]> data;
-  char buf[MAX_LINE_SIZE];
-  while (fgets(buf, MAX_LINE_SIZE, fp))
+  std::vector<std::array<double, 2>> data;
+  char buf[CHAR_BUF_SIZE];
+  while (fgets(buf, CHAR_BUF_SIZE, fp))
   {
-    char* it = buf;
-    double lineData[2];
-    while (*it != ',')
-      it++;
-
   }
 }
 
@@ -45,10 +43,25 @@ bool load_file_2d(const char* path)
   if (fp == NULL)
     return false;
 
-  std::vector<double[3]> data;
-  char buf[MAX_LINE_SIZE];
-  while (fgets(buf, MAX_LINE_SIZE, fp))
+  std::vector<std::array<double, 3>> data;
+  char buf[CHAR_BUF_SIZE];
+  while (fgets(buf, CHAR_BUF_SIZE, fp))
   {
+    std::array<double, 3> lineData;
+
+    char* start = buf;
+    char* delim = buf;
+    for (int i = 0; i < 3; i++)
+    {
+      // TODO proper error checking
+      while (*delim != ',' && *delim != '\n' && *delim != '\0')
+        delim++;
+      *delim = '\0';
+      lineData[i] = std::stod(start);
+      start = ++delim;
+    }
+
+    data.push_back(lineData);
   }
 }
 

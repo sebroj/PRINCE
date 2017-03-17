@@ -11,6 +11,7 @@
 
 #define CHAR_BUF_SIZE 256
 
+// TODO port to nan for compatibility and robustness.
 using v8::Exception;
 using v8::FunctionCallbackInfo;
 using v8::Isolate;
@@ -110,4 +111,4 @@ void init(Local<Object> exports)
   NODE_SET_METHOD(exports, "load_file", load_file);
 }
 
-NODE_MODULE(addon, init)
+NODE_MODULE(main, init)

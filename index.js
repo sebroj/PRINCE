@@ -17,23 +17,20 @@ var parameterNames = [
 var requiredParams = {
   "Simplified Esipchuk-Tilinin":
     ["Electron Density",
-    "Neutral Density",
+    "Axial Ion Velocity",
+    "Radial Magnetic Field",
     "Electric Potential"],
   "Long wavelength gradient drift":
     ["Electron Density",
-    "Electron Temperature",
     "Electric Potential",
-    "Azimuthal Magnetic Field",
-    "Axial Ion Velocity"],
+    "Radial Magnetic Field"],
   "High-frequency ExB drift":
     ["Electron Density",
-    "Radial Magnetic Field",
-    "Axial Magnetic Field",
-    "Axial Ion Velocity"],
-  "Damped warm Langmuir waves":
-    ["Electron Density",
     "Electron Temperature",
-    "Neutral Density"]
+    "Electric Potential",
+    "Radial Magnetic Field"],
+  "Damped warm Langmuir waves":
+    ["Electron Density"]
 };
 
 /* Toggle between hiding and showing the dropdown content */

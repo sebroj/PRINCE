@@ -1,0 +1,46 @@
+{
+  "Plasma Parameters": [
+    "Electron Density",
+    "Electron Temperature",
+    "Neutral Density",
+    "Electric Potential",
+    "Radial Magnetic Field",
+    "Axial Magnetic Field",
+    "Azimuthal Magnetic Field",
+    "Axial Ion Velocity"
+  ],
+  "Dispersion Relations": [
+    {
+      "name": "Simplified Esipchuk-Tilinin",
+      "req": [
+        "Electron Density",
+        "Axial Ion Velocity",
+        "Radial Magnetic Field",
+        "Electric Potential"
+      ]
+    },
+    {
+      "name": "Long wavelength gradient drift",
+      "req": [
+        "Electron Density",
+        "Electric Potential",
+        "Radial Magnetic Field"
+      ]
+    },
+    {
+      "name": "High-frequency ExB drift",
+      "req": [
+        "Electron Density",
+        "Electron Temperature",
+        "Electric Potential",
+        "Radial Magnetic Field"
+      ]
+    },
+    {
+      "name": "Damped warm Langmuir waves",
+      "req": [
+        "Electron Density"
+      ]
+    }
+  ]
+}

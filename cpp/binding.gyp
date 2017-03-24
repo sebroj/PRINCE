@@ -2,7 +2,10 @@
     "targets": [
         {
             "target_name": "main",
-            "sources": [ "main.cpp" ]
+            "sources": [
+                "main.cpp",
+                "load_data.cpp"
+            ]
         }
     ]
 }

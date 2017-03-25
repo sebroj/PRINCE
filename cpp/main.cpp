@@ -28,22 +28,28 @@ void load_file(const FunctionCallbackInfo<Value>& args)
   Isolate* isolate = args.GetIsolate();
 
   // Check for valid arguments.
-  if (args.Length() != 2)
+  if (args.Length() != 3)
   {
     isolate->ThrowException(Exception::TypeError(
-      String::NewFromUtf8(isolate, "Expected 2 args.")));
+      String::NewFromUtf8(isolate, "Expected 3 args.")));
     return;
   }
   if (!args[0]->IsString())
   {
     isolate->ThrowException(Exception::TypeError(
-      String::NewFromUtf8(isolate, "Arg 1 should be a string.")));
+      String::NewFromUtf8(isolate, "Arg 1 should be a string (path).")));
     return;
   }
   if (!args[1]->IsInt32())
   {
     isolate->ThrowException(Exception::TypeError(
-      String::NewFromUtf8(isolate, "Arg 2 should be an integer.")));
+      String::NewFromUtf8(isolate, "Arg 2 should be an integer (dimension).")));
+    return;
+  }
+  if (!args[2]->IsInt32())
+  {
+    isolate->ThrowException(Exception::TypeError(
+      String::NewFromUtf8(isolate, "Arg 3 should be an integer (data ID).")));
     return;
   }
 
@@ -51,6 +57,7 @@ void load_file(const FunctionCallbackInfo<Value>& args)
   String::Utf8Value string(args[0]);
   const char* cstring = to_c_string(string);
   int dataDim = args[1]->Int32Value();
+  int dataType = args[2]->Int32Value();
 
   if (!load_file(cstring, dataDim))
   {

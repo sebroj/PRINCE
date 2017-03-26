@@ -3,35 +3,13 @@
 // index.js
 // Main script for index.html
 
-// TODO: move this data out of here
-var parameterNames = [
-  "Electron Density",
-  "Electron Temperature",
-  "Neutral Density",
-  "Electric Potential",
-  "Radial Magnetic Field",
-  "Axial Magnetic Field",
-  "Azimuthal Magnetic Field",
-  "Axial Ion Velocity"
-];
-var requiredParams = {
-  "Simplified Esipchuk-Tilinin":
-    ["Electron Density",
-    "Axial Ion Velocity",
-    "Radial Magnetic Field",
-    "Electric Potential"],
-  "Long wavelength gradient drift":
-    ["Electron Density",
-    "Electric Potential",
-    "Radial Magnetic Field"],
-  "High-frequency ExB drift":
-    ["Electron Density",
-    "Electron Temperature",
-    "Electric Potential",
-    "Radial Magnetic Field"],
-  "Damped warm Langmuir waves":
-    ["Electron Density"]
-};
+// ========== Data loaded from formats.json ==========
+// Array of plasma parameter names.
+var plasmaParameterNames = [];
+// Dictionary with dispersion relation names as keys
+// and arrays of required plasma parameter names as values.
+var requiredParameters = {};
+// ===================================================
 
 /* Toggle between hiding and showing the dropdown content */
 function toggleDropdown()
@@ -48,12 +26,12 @@ function dispSelect(event)
   $("#dropdownButton").text(dispersionName);
 
   // Reorder plasma parameters.
-  var params = requiredParams[dispersionName];
+  var params = requiredParameters[dispersionName];
   var paramIDs = [];
   for (var i = 0; i < params.length; i++)
-    paramIDs.push(parameterNames.indexOf(params[i]));
+    paramIDs.push(plasmaParameterNames.indexOf(params[i]));
 
-  for (var i = 0; i < parameterNames.length; i++)
+  for (var i = 0; i < plasmaParameterNames.length; i++)
   {
     if (paramIDs.indexOf(i) >= 0)
       $("#parameter" + i).appendTo($("#required"));
@@ -65,6 +43,8 @@ function dispSelect(event)
 /* Input data file has been changed. */
 function fileChange(event)
 {
+  // TODO undesired/annoying behavior: click "Select File" button again when
+  // dialog is open causes another file upload window to pop up after.
   const dialog = require("electron").remote.dialog;
   var files = dialog.showOpenDialog({ properties: [ 'openFile' ] });
   if (files == undefined)
@@ -76,14 +56,15 @@ function fileChange(event)
   var paramFilename = $(event.target).parent().find(".paramFilename");
   paramFilename[0].textContent = filename;
 
-  var paramDataType = $(event.target).closest(".parameter").find(".paramDataType");
-  var checked = paramDataType.find("input:checked");
+  var parameter = $(event.target).closest(".parameter");
+  var paramID = plasmaParameterNames.indexOf(parameter.find(".paramName").text());
+  var checked = parameter.find(".paramDataType").find("input:checked");
   var dataDim = 1;
   if (checked.attr("class") == "radio2D")
     dataDim = 2;
 
   const cppmain = require("./cpp/build/Release/main");
-  console.log(cppmain.load_file(filepath, dataDim, 0));
+  console.log(cppmain.load_file(filepath, dataDim, paramID));
 }
 
 function param0D(event)
@@ -111,12 +92,26 @@ function param2D(event)
   param.find(".paramDataFile").show();
 }
 
-function doScaryThings()
+function loadFormats()
 {
-  //const scary = require("./cpp/build/Release/scary");
-  //console.log("Starting scary things...");
-  //console.log(scary.execute("DONE"));
-  //console.log("Finished scary things...");
+  var fs = require("fs");
+  var contents = fs.readFileSync("formats.json");
+  var formats = JSON.parse(contents);
+
+  plasmaParameterNames = formats["Plasma Parameters"];
+  for (var i = 0; i < formats["Dispersion Relations"].length; i++)
+  {
+    var disp = formats["Dispersion Relations"][i];
+    requiredParameters[disp["name"]] = disp["req"];
+    for (var j = 0; j < disp["req"].length; j++)
+    {
+      if (plasmaParameterNames.indexOf(disp["req"][j]) == -1)
+      {
+        throw "ERROR - " + disp["name"] + " requires non-existent parameter: "
+          + disp["req"][j];
+      }
+    }
+  }
 }
 
 $(function() {
@@ -125,14 +120,16 @@ $(function() {
   console.log("Chrome version: " + process.versions.chrome);
   console.log("Electron version: " + process.versions.electron);
 
+  loadFormats();
+
   // Generate plasma parameter divs.
   var parameter = $(".parameter");
-  for (var i = 0; i < parameterNames.length; i++)
+  for (var i = 0; i < plasmaParameterNames.length; i++)
   {
     var clone = parameter.clone(true);
     clone.attr("id", "parameter" + i);
     clone.appendTo(parameter.parent());
-    clone.find(".paramName").text(parameterNames[i]);
+    clone.find(".paramName").text(plasmaParameterNames[i]);
     // Assign different names to each parameter's radio groups.
     clone.find(".paramDataType").find("input").each(function() {
       if ($(this).attr("type") == "radio")

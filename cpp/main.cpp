@@ -18,7 +18,7 @@ using v8::Object;
 using v8::String;
 using v8::Value;
 
-const char* to_c_string(const String::Utf8Value& value)
+static const char* to_c_string(const String::Utf8Value& value)
 {
   return *value ? *value : "STRING CONVERSION FAILED";
 }
@@ -57,15 +57,15 @@ void load_file(const FunctionCallbackInfo<Value>& args)
   String::Utf8Value string(args[0]);
   const char* cstring = to_c_string(string);
   int dataDim = args[1]->Int32Value();
-  int dataType = args[2]->Int32Value();
+  int paramID = args[2]->Int32Value();
 
-  if (!load_data(cstring, dataDim, dataType))
+  if (!load_data(cstring, dataDim, paramID))
   {
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, "FAILED"));
   }
   else
   {
-    args.GetReturnValue().Set(String::NewFromUtf8(isolate, "success"));
+    args.GetReturnValue().Set(String::NewFromUtf8(isolate, "Success"));
   }
 }
 

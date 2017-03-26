@@ -1,3 +1,3 @@
 #pragma once
 
-bool load_data(const char* path, int dim, int typeID);
+bool load_data(const char* path, int dim, int paramID);

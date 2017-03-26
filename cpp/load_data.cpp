@@ -6,55 +6,119 @@
 
 #include <array>
 
-#define CHAR_BUF_SIZE 256
+// TODO all debug/assert errors have been labeled as "ERROR (DBG): message"
+// maybe centralize this logging system.
 
-class DataPoints
+class DataCoords
 {
 private:
-  std::vector<double> points1D;
-  std::vector<std::array<double, 2>> points2D; // ew, std array
-
-  void ProcessData1D(const std::vector<std::vector<double>>& data)
-  {
-  }
-  void ProcessData2D(const std::vector<std::vector<double>>& data)
-  {
-    if (points2D.empty())
-    {
-      printf("empty, adding new data\n");
-      for (const std::vector<double>& dataLine : data)
-      {
-        std::array<double, 2> point;
-        point[0] = dataLine[0];
-        point[1] = dataLine[1];
-
-        points2D.push_back(point);
-      }
-    }
-    else
-    {
-      printf("NOT empty... idk what to do\n");
-    }
-  }
+  std::vector<double> coords1D;
+  std::vector<std::array<double, 2>> coords2D; // TODO ew std::array
 
 public:
-  void ProcessData(const std::vector<std::vector<double>>& data)
+  // Processes the new data points given by data.
+  // Data must be sorted in ascending order (first by [0], then by [1], if 2D).
+  bool new_data(const std::vector<std::vector<double>>& data)
   {
-    if (data.size() == 0)
-      return; // TODO log error
+    if (data.empty())
+    {
+      printf("ERROR (DBG): data was empty\n.");
+      return false;
+    }
+    int dataDim = (int)data[0].size() - 1;
+    if (dataDim != 1 && dataDim != 2)
+    {
+      printf("ERROR (DBG): data points aren't 1-D or 2-D.\n.");
+      return false;
+    }
 
-    if (data[0].size() == 2)
-      ProcessData1D(data);
-    else if (data[0].size() == 3)
-      ProcessData2D(data);
-    else
-      return; // TODO log error
+    int currentDim = dimension();
+    if (dataDim == 1)
+    {
+      if (currentDim == 0)
+      {
+        printf("DBG: 1D, no previous points\n");
+        for (const std::vector<double>& d : data)
+          coords1D.push_back(d[0]);
+      }
+      else if (currentDim == 1)
+      {
+        printf("DBG: 1D, existing 1D points\n");
+        for (int i = 0; i < coords1D.size(); i++)
+        {
+          if (coords1D[i] != data[i][0])
+          {
+            printf("ERROR (DBG): New data points don't match previous data.\n.");
+            return false;
+          }
+        }
+      }
+      else if (currentDim == 2)
+      {
+        printf("DBG: 1D, existing 2D points\n");
+        for (int i = 0; i < coords2D.size(); i++)
+        {
+          // TODO determine which coordinate to check
+          if (coords2D[i][0] != data[i][0])
+          {
+            printf("ERROR (DBG): New data points don't match previous data.\n.");
+            return false;
+          }
+        }
+      }
+    }
+    else if (dataDim == 2)
+    {
+      if (currentDim == 0)
+      {
+        printf("DBG: 2D, no previous points\n");
+        for (const std::vector<double>& d : data)
+        {
+          std::array<double, 2> coord = { d[0], d[1] };
+          coords2D.push_back(coord);
+        }
+      }
+      else if (currentDim == 1)
+      {
+        printf("DBG: 2D, existing 1D points (add stuff)\n");
+        printf("UNIMPLEMENTED\n");
+      }
+      else if (currentDim == 2)
+      {
+        printf("DBG: 2D, existing 2D points\n");
+        for (int i = 0; i < coords2D.size(); i++)
+        {
+          if (coords2D[i][0] != data[i][0] || coords2D[i][1] != data[i][1])
+          {
+            printf("ERROR (DBG): New data points don't match previous data.\n.");
+            return false;
+          }
+        }
+      }
+    }
+
+    return true;
+  }
+
+  int dimension()
+  {
+    if (coords1D.empty() && coords2D.empty())
+      return 0;
+    else if (!coords1D.empty() && coords2D.empty())
+      return 1;
+    else if (coords1D.empty() && !coords2D.empty())
+      return 2;
+
+    printf("ERROR (DBG): Both coords1D and coords2D are set.\n");
+    return -1;
   }
 };
 
-DataPoints dataPoints;
+DataCoords dataCoords;
 
-char* trim_whitespace(char* str)
+// Trim leading and trailing whitespace from str IN PLACE.
+// Return a null-terminated substring of str with trimmed whitespace.
+static char* trim_whitespace(char* str)
 {
   // Leading whitespace
   while (isspace(*str))
@@ -75,7 +139,7 @@ char* trim_whitespace(char* str)
 
 // Read null-terminated string line as a list of comma-separated doubles.
 // Return a vector of the read doubles.
-std::vector<double> read_line_data(char* line)
+static std::vector<double> read_line_data(char* line)
 {
   std::vector<double> data;
 
@@ -96,7 +160,7 @@ std::vector<double> read_line_data(char* line)
     double value = strtod(start, &endptr);
     if (endptr == start || *endptr != '\0')
     {
-      printf("    LINE ERROR - Malformed number: \"%s\"\n", start);
+      printf("    LINE ERROR: Malformed number \"%s\"\n", start);
       return std::vector<double>();
     }
 
@@ -107,9 +171,21 @@ std::vector<double> read_line_data(char* line)
   return data;
 }
 
-bool load_data(const char* path, int dim, int typeID)
+static bool compare_data(
+  const std::vector<double>& d1,
+  const std::vector<double>& d2)
 {
-  //printf("Load %d-D data from %s\n", dim, path);
+  if (d1[0] == d2[0])
+    return d1[1] <= d2[1];
+
+  return d1[0] < d2[0];
+}
+
+bool load_data(const char* path, int dim, int paramID)
+{
+  const int CHAR_BUF_SIZE = 256;
+
+  printf("Load parameter %d's %d-D data from %s\n", paramID, dim, path);
   FILE* fp = fopen(path, "r");
   if (fp == NULL)
     return false;
@@ -123,14 +199,14 @@ bool load_data(const char* path, int dim, int typeID)
     std::vector<double> lineData = read_line_data(trimmed);
     if (lineData.empty())
     {
-      printf("Error reading line %d.\n", lineNumber);
+      printf("ERROR when reading line %d.\n", lineNumber);
       return false;
     }
     if (lineData.size() != dim + 1)
     {
-      printf("    LINE ERROR - Read %d values, expected %d.\n",
+      printf("    LINE ERROR: Read %d values, expected %d.\n",
         (int)lineData.size(), dim+1);
-      printf("Error reading line %d.\n", lineNumber);
+      printf("ERROR when reading line %d.\n", lineNumber);
       return false;
     }
 
@@ -138,7 +214,12 @@ bool load_data(const char* path, int dim, int typeID)
     lineNumber++;
   }
 
-  dataPoints.ProcessData(data);
+  // Sort data in the ascending order given by compare_data.
+  std::sort(std::begin(data), std::end(data), compare_data);
+  if (!dataCoords.new_data(data))
+  {
+    return false;
+  }
 
   return true;
 }

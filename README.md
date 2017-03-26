@@ -61,3 +61,5 @@ instructions.
     npm start
     ```
     This will start the application.
+
+5. __Build the application.__ You're on your own, for now.

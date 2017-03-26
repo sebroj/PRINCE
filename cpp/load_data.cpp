@@ -54,68 +54,88 @@ public:
 
 DataPoints dataPoints;
 
+char* trim_whitespace(char* str)
+{
+  // Leading whitespace
+  while (isspace(*str))
+    str++;
+
+  // All spaces
+  if (*str == '\0')
+    return str;
+
+  // Trailing whitespace
+  char* end = str + strlen(str) - 1;
+  while (end > str && isspace(*end))
+    end--;
+  *(end + 1) = 0;
+
+  return str;
+}
+
 // Read null-terminated string line as a list of comma-separated doubles.
 // Return a vector of the read doubles.
 std::vector<double> read_line_data(char* line)
 {
   std::vector<double> data;
+
   char* start = line;
   char* delim = line;
-  while (true)
+  bool nullChar = false;
+  while (!nullChar)
   {
-    while (*delim != ',' && *delim != '\n' && *delim != '\0')
+    while (*delim != ',' && *delim != '\0')
       delim++;
 
+    if (*delim == '\0')
+      nullChar = true;
     *delim = '\0';
-    double value;
-    try {
-      value = std::stod(start);
+
+    start = trim_whitespace(start);
+    char* endptr = start;
+    double value = strtod(start, &endptr);
+    if (endptr == start || *endptr != '\0')
+    {
+      printf("    LINE ERROR - Malformed number: \"%s\"\n", start);
+      return std::vector<double>();
     }
-    catch (const std::invalid_argument& ia) {
-      printf("Misformatted number at (INSERT USEFUL INFO).\n");
-      return data; // TODO error return value??
-    }
+
     data.push_back(value);
+    start = ++delim;
   }
+
+  return data;
 }
 
 bool load_data(const char* path, int dim, int typeID)
 {
-  printf("Load %d-D data from %s\n", dim, path);
-
+  //printf("Load %d-D data from %s\n", dim, path);
   FILE* fp = fopen(path, "r");
   if (fp == NULL)
     return false;
 
   std::vector<std::vector<double>> data;
   char buf[CHAR_BUF_SIZE];
+  int lineNumber = 1;
   while (fgets(buf, CHAR_BUF_SIZE, fp))
   {
-    std::vector<double> lineData;
-
-    char* start = buf;
-    char* delim = buf;
-    for (int i = 0; i < (dim + 1); i++)
+    char* trimmed = trim_whitespace(buf);
+    std::vector<double> lineData = read_line_data(trimmed);
+    if (lineData.empty())
     {
-      while (*delim != ',' && *delim != '\n' && *delim != '\0')
-        delim++;
-
-      *delim = '\0';
-      // TODO exception handling (probably write my own string->double parser)
-      lineData.push_back(std::stod(start));
-      start = ++delim;
-
-      if (delim - buf >= CHAR_BUF_SIZE)
-        break;
+      printf("Error reading line %d.\n", lineNumber);
+      return false;
     }
-
     if (lineData.size() != dim + 1)
     {
-      printf("Incorrect number of data points.");
+      printf("    LINE ERROR - Read %d values, expected %d.\n",
+        (int)lineData.size(), dim+1);
+      printf("Error reading line %d.\n", lineNumber);
       return false;
     }
 
     data.push_back(lineData);
+    lineNumber++;
   }
 
   dataPoints.ProcessData(data);

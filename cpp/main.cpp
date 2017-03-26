@@ -59,13 +59,14 @@ void load_file(const FunctionCallbackInfo<Value>& args)
   int dataDim = args[1]->Int32Value();
   int dataType = args[2]->Int32Value();
 
-  if (!load_file(cstring, dataDim))
+  if (!load_data(cstring, dataDim, dataType))
   {
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, "FAILED"));
-    return;
   }
-
-  args.GetReturnValue().Set(String::NewFromUtf8(isolate, "success"));
+  else
+  {
+    args.GetReturnValue().Set(String::NewFromUtf8(isolate, "success"));
+  }
 }
 
 void init(Local<Object> exports)

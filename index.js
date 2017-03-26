@@ -83,7 +83,7 @@ function fileChange(event)
     dataDim = 2;
 
   const cppmain = require("./cpp/build/Release/main");
-  console.log(cppmain.load_file(filepath, dataDim));
+  console.log(cppmain.load_file(filepath, dataDim, 0));
 }
 
 function param0D(event)

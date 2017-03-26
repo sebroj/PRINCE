@@ -57,14 +57,17 @@ function fileChange(event)
   paramFilename[0].textContent = filename;
 
   var parameter = $(event.target).closest(".parameter");
-  var paramID = plasmaParameterNames.indexOf(parameter.find(".paramName").text());
+  var paramName = parameter.find(".paramName").text();
+  var paramID = plasmaParameterNames.indexOf(paramName);
   var checked = parameter.find(".paramDataType").find("input:checked");
   var dataDim = 1;
   if (checked.attr("class") == "radio2D")
     dataDim = 2;
 
+  var coordTypes = [2, -1];
+
   const cppmain = require("./cpp/build/Release/main");
-  console.log(cppmain.load_file(filepath, dataDim, paramID));
+  console.log(cppmain.load_file(filepath, dataDim, paramID, coordTypes));
 }
 
 function param0D(event)
@@ -107,6 +110,7 @@ function loadFormats()
     {
       if (plasmaParameterNames.indexOf(disp["req"][j]) == -1)
       {
+        // TODO make a DEBUG_error type thing for this
         throw "ERROR - " + disp["name"] + " requires non-existent parameter: "
           + disp["req"][j];
       }

@@ -3,7 +3,7 @@
         {
             "target_name": "main",
             "sources": [
-                "main.cpp",
+                "node_main.cpp",
                 "load_data.cpp"
             ]
         }

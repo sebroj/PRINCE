@@ -6,12 +6,15 @@
 
 #include <array>
 
-// TODO all debug/assert errors have been labeled as "ERROR (DBG): message"
-// maybe centralize this logging system.
+#include "node_main.h"
+
+// TODO all user errors have been labeled as "ERROR (USR): message"
+// centralize this logging system.
 
 class DataCoords
 {
 private:
+  CoordType coordTypes[2] = { COORD_NONE, COORD_NONE };
   std::vector<double> coords1D;
   std::vector<std::array<double, 2>> coords2D; // TODO ew std::array
 
@@ -22,13 +25,13 @@ public:
   {
     if (data.empty())
     {
-      printf("ERROR (DBG): data was empty\n.");
+      DEBUG_error("new data was empty");
       return false;
     }
     int dataDim = (int)data[0].size() - 1;
     if (dataDim != 1 && dataDim != 2)
     {
-      printf("ERROR (DBG): data points aren't 1-D or 2-D.\n.");
+      DEBUG_error("data points aren't 1-D or 2-D");
       return false;
     }
 
@@ -48,7 +51,7 @@ public:
         {
           if (coords1D[i] != data[i][0])
           {
-            printf("ERROR (DBG): New data points don't match previous data.\n.");
+            printf("ERROR (USR): New data points don't match previous data.\n.");
             return false;
           }
         }
@@ -61,7 +64,7 @@ public:
           // TODO determine which coordinate to check
           if (coords2D[i][0] != data[i][0])
           {
-            printf("ERROR (DBG): New data points don't match previous data.\n.");
+            printf("ERROR (USR): New data points don't match previous data.\n.");
             return false;
           }
         }
@@ -90,7 +93,7 @@ public:
         {
           if (coords2D[i][0] != data[i][0] || coords2D[i][1] != data[i][1])
           {
-            printf("ERROR (DBG): New data points don't match previous data.\n.");
+            printf("ERROR (USR): New data points don't match previous data.\n.");
             return false;
           }
         }
@@ -109,7 +112,7 @@ public:
     else if (coords1D.empty() && !coords2D.empty())
       return 2;
 
-    printf("ERROR (DBG): Both coords1D and coords2D are set.\n");
+    DEBUG_error("both coords1D and coords2D are set");
     return -1;
   }
 };
@@ -160,7 +163,7 @@ static std::vector<double> read_line_data(char* line)
     double value = strtod(start, &endptr);
     if (endptr == start || *endptr != '\0')
     {
-      printf("    LINE ERROR: Malformed number \"%s\"\n", start);
+      printf("    LINE ERROR (USR): Malformed number \"%s\"\n", start);
       return std::vector<double>();
     }
 
@@ -181,32 +184,33 @@ static bool compare_data(
   return d1[0] < d2[0];
 }
 
-bool load_data(const char* path, int dim, int paramID)
+bool load_data(const char* path, int dim, int paramID, CoordType coordTypes[2])
 {
-  const int CHAR_BUF_SIZE = 256;
+  const int BUF_SIZE = 256;
 
   printf("Load parameter %d's %d-D data from %s\n", paramID, dim, path);
+  printf("Coordinates: %d, %d\n", coordTypes[0], coordTypes[1]);
   FILE* fp = fopen(path, "r");
   if (fp == NULL)
     return false;
 
   std::vector<std::vector<double>> data;
-  char buf[CHAR_BUF_SIZE];
+  char buf[BUF_SIZE];
   int lineNumber = 1;
-  while (fgets(buf, CHAR_BUF_SIZE, fp))
+  while (fgets(buf, BUF_SIZE, fp))
   {
     char* trimmed = trim_whitespace(buf);
     std::vector<double> lineData = read_line_data(trimmed);
     if (lineData.empty())
     {
-      printf("ERROR when reading line %d.\n", lineNumber);
+      printf("ERROR (USR): unable to read line %d\n", lineNumber);
       return false;
     }
     if (lineData.size() != dim + 1)
     {
-      printf("    LINE ERROR: Read %d values, expected %d.\n",
+      printf("    LINE ERROR (USR): Read %d values, expected %d.\n",
         (int)lineData.size(), dim+1);
-      printf("ERROR when reading line %d.\n", lineNumber);
+      printf("ERROR (USR): unable to read line %d\n", lineNumber);
       return false;
     }
 

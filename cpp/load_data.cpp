@@ -13,13 +13,12 @@
 
 class DataCoords
 {
-private:
   CoordType coordTypes[2] = { COORD_NONE, COORD_NONE };
   std::vector<double> coords1D;
   std::vector<std::array<double, 2>> coords2D; // TODO ew std::array
 
 public:
-  // Processes the new data points given by data.
+  // Processes the new data coordinates given by data.
   // Data must be sorted in ascending order (first by [0], then by [1], if 2D).
   bool new_data(const std::vector<std::vector<double>>& data,
     CoordType coordTypes[2])
@@ -29,7 +28,7 @@ public:
       DEBUG_error("new data was empty");
       return false;
     }
-    int dataDim = (int)data[0].size() - 1;
+    int dataDim = (int)data[0].size();
     if (dataDim != 1 && dataDim != 2)
     {
       DEBUG_error("data points aren't 1-D or 2-D");
@@ -154,6 +153,17 @@ public:
   }
 };
 
+class DataValues
+{
+  std::vector<std::vector<double>> values;
+
+public:
+  void set(int id, const std::vector<double>& data)
+  {
+    values[id] = std::vector<double>(data);
+  }
+};
+
 DataCoords dataCoords;
 
 // Trim leading and trailing whitespace from str IN PLACE.
@@ -246,7 +256,7 @@ bool load_data(const char* path, int dim, int paramID, CoordType coordTypes[2])
     if (lineData.size() != dim + 1)
     {
       printf("    LINE ERROR (USR): Read %d values, expected %d.\n",
-        (int)lineData.size(), dim+1);
+        (int)lineData.size(), dim + 1);
       printf("ERROR (USR): unable to read line %d\n", lineNumber);
       return false;
     }

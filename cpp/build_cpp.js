@@ -16,7 +16,6 @@ var exec = require("child_process").exec;
 if (process.platform == "win32")
 {
   console.log("Building C++ code for Windows");
-  // TODO check this (we're not in this directory)
   exec("cpp\\win_build_cpp.bat", execCallback);
 }
 else if (process.platform == "darwin")

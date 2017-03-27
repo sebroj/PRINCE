@@ -54,10 +54,8 @@ function fileChange(event)
     return;
 
   var filepath = files[0];
-
   var filename = filepath.replace(/^.*[\\\/]/, '');
   var paramFilename = $(event.target).parent().find(".paramFilename");
-  paramFilename[0].textContent = filename;
 
   var parameter = $(event.target).closest(".parameter");
   var paramName = parameter.find(".paramName").text();
@@ -98,7 +96,17 @@ function fileChange(event)
       coordTypes[1] = 2;
     }
   }
-  console.log(cppmain.load_file(filepath, dataDim, paramID, coordTypes));
+  var success = cppmain.load_file(filepath, dataDim, paramID, coordTypes);
+  if (success)
+  {
+    console.log("Success!");
+    paramFilename.text(filename);
+  }
+  else
+  {
+    console.log("FAILED");
+    paramFilename.text("No file selected");
+  }
 }
 
 function param0D(event)

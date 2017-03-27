@@ -111,14 +111,7 @@ static void load_file(const FunctionCallbackInfo<Value>& args)
   int paramID = args[2]->Int32Value();
   CoordType coordTypes[2] = { (CoordType)a0, (CoordType)a1 };
 
-  if (!load_data(cstring, dataDim, paramID, coordTypes))
-  {
-    args.GetReturnValue().Set(String::NewFromUtf8(isolate, "FAILED"));
-  }
-  else
-  {
-    args.GetReturnValue().Set(String::NewFromUtf8(isolate, "Success"));
-  }
+  args.GetReturnValue().Set(load_data(cstring, dataDim, paramID, coordTypes));
 }
 
 static void setup_parameters(const FunctionCallbackInfo<Value>& args)

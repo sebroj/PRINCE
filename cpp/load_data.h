@@ -10,4 +10,5 @@ enum CoordType
   COORD_Z = 2
 };
 
+bool set_parameter_count(int count);
 bool load_data(const char* path, int dim, int paramID, CoordType coordTypes[2]);

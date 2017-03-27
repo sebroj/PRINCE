@@ -66,40 +66,41 @@ static void load_file(const FunctionCallbackInfo<Value>& args)
   }
   if (!args[0]->IsString())
   {
-    DEBUG_error("arg 1 should be a string (file path)");
+    DEBUG_error("load_file arg 1 should be a string (file path)");
     return;
   }
   if (!args[1]->IsInt32())
   {
-    DEBUG_error("arg 2 should be an int (dimension)");
+    DEBUG_error("load_file arg 2 should be an int (dimension)");
     return;
   }
   if (!args[2]->IsInt32())
   {
-    DEBUG_error("arg 3 should be an int (parameter ID)");
+    DEBUG_error("load_file arg 3 should be an int (parameter ID)");
     return;
   }
   if (!args[3]->IsArray())
   {
-    DEBUG_error("arg 4 should be an array (coord types)");
+    DEBUG_error("load_file arg 4 should be an array (coord types)");
     return;
   }
   Local<v8::Array> array = Local<v8::Array>::Cast(args[3]);
   if (array->Length() != 2)
   {
-    DEBUG_error("arg 4 array length is %d, but should be 2", array->Length());
+    DEBUG_error("load_file arg 4 array length is %d, but should be 2",
+      array->Length());
     return;
   }
   if (!array->Get(0)->IsInt32() || !array->Get(1)->IsInt32())
   {
-    DEBUG_error("arg 4 array elements should be integers");
+    DEBUG_error("load_file arg 4 array elements should be integers");
     return;
   }
   int a0 = array->Get(0)->Int32Value();
   int a1 = array->Get(1)->Int32Value();
   if (a0 < COORD_NONE || a0 > COORD_Z || a1 < COORD_NONE || a1 > COORD_Z)
   {
-    DEBUG_error("arg 4 array elements should be valid CoordType enum values");
+    DEBUG_error("load_file arg 4 array elements should be valid CoordType values");
     return;
   }
 
@@ -120,9 +121,31 @@ static void load_file(const FunctionCallbackInfo<Value>& args)
   }
 }
 
+static void setup_parameters(const FunctionCallbackInfo<Value>& args)
+{
+  Isolate* isolate = args.GetIsolate();
+
+  // Check for valid arguments.
+  if (args.Length() != 1)
+  {
+    DEBUG_error("setup_parameters expected 1 argument");
+    return;
+  }
+  if (!args[0]->IsInt32())
+  {
+    DEBUG_error("setup_parameters arg 1 should be an int (param count)");
+    return;
+  }
+  // TODO possibly pass parameter names? or at least symbols for equations...
+
+  int paramCount = args[0]->Int32Value();
+  set_parameter_count(paramCount);
+}
+
 static void init(Local<Object> exports)
 {
   NODE_SET_METHOD(exports, "load_file", load_file);
+  NODE_SET_METHOD(exports, "setup_parameters", setup_parameters);
 }
 
 NODE_MODULE(main, init)

@@ -11,6 +11,9 @@ var plasmaParameterNames = [];
 var requiredParameters = {};
 // ===================================================
 
+// Load native C++ module.
+const cppmain = require("./cpp/build/Release/main");
+
 /* Toggle between hiding and showing the dropdown content */
 function toggleDropdown()
 {
@@ -95,8 +98,6 @@ function fileChange(event)
       coordTypes[1] = 2;
     }
   }
-
-  const cppmain = require("./cpp/build/Release/main");
   console.log(cppmain.load_file(filepath, dataDim, paramID, coordTypes));
 }
 
@@ -155,6 +156,7 @@ $(function() {
   console.log("Electron version: " + process.versions.electron);
 
   loadFormats();
+  cppmain.setup_parameters(plasmaParameterNames.length);
 
   // Generate plasma parameter divs.
   var parameter = $(".parameter");

@@ -9,50 +9,57 @@
 #include "node_main.h"
 
 // TODO all user errors have been labeled as "ERROR (USR): message"
-// centralize this logging system.
+// centralize this logging system. Messages will be improved in future revision.
 
-class DataCoords
+class DataPoints
 {
   CoordType coordTypes[2] = { COORD_NONE, COORD_NONE };
   std::vector<double> coords1D;
   std::vector<std::array<double, 2>> coords2D; // TODO ew std::array
 
 public:
-  // Processes the new data coordinates given by data.
-  // Data must be sorted in ascending order (first by [0], then by [1], if 2D).
-  bool new_data(const std::vector<std::vector<double>>& data,
+  // Processes the new data points given by points.
+  // Points must be sorted in ascending order (first by [0], then by [1], if 2D)
+  bool new_points(
+    const std::vector<std::vector<double>>& points,
     CoordType coordTypes[2])
   {
-    if (data.empty())
+    if (points.empty())
     {
-      DEBUG_error("new data was empty");
+      DEBUG_error("new points were empty");
       return false;
     }
-    int dataDim = (int)data[0].size();
-    if (dataDim != 1 && dataDim != 2)
+    int pointsDim = (int)points[0].size();
+    if (pointsDim != 1 && pointsDim != 2)
     {
-      DEBUG_error("data points aren't 1-D or 2-D");
+      DEBUG_error("new points aren't 1-D or 2-D");
       return false;
     }
 
     int currentDim = dimension();
-    if (dataDim == 1)
+    if (pointsDim == 1)
     {
       if (currentDim == 0)
       {
         printf("DBG: 1D, no previous points\n");
         this->coordTypes[0] = coordTypes[0];
-        for (const std::vector<double>& d : data)
-          coords1D.push_back(d[0]);
+        // TODO make this a straight copy (must not pass values in points first)
+        for (const std::vector<double>& point : points)
+          coords1D.push_back(point[0]);
       }
       else if (currentDim == 1)
       {
         if (this->coordTypes[0] == coordTypes[0])
         {
           printf("DBG: 1D, existing 1D points, same coords\n");
+          if (coords1D.size() != points.size())
+          {
+            printf("ERROR (USR): Number of new points doesn't match previous data.\n.");
+            return false;
+          }
           for (int i = 0; i < coords1D.size(); i++)
           {
-            if (coords1D[i] != data[i][0])
+            if (coords1D[i] != points[i][0])
             {
               printf("ERROR (USR): New data points don't match previous data.\n.");
               return false;
@@ -71,7 +78,7 @@ public:
         int coord;
         if (this->coordTypes[0] == coordTypes[0])
           coord = 0;
-        else if (this->coordTypes[1] == coordTypes[1])
+        else if (this->coordTypes[1] == coordTypes[0])
           coord = 1;
         else
         {
@@ -81,8 +88,12 @@ public:
 
         for (int i = 0; i < coords2D.size(); i++)
         {
-          // TODO determine which coordinate to check
-          if (coords2D[i][coord] != data[i][coord])
+          if (coords2D.size() != points.size())
+          {
+            printf("ERROR (USR): Number of new points doesn't match previous data.\n.");
+            return false;
+          }
+          if (coords2D[i][coord] != points[i][coord])
           {
             printf("ERROR (USR): New data points don't match previous data.\n.");
             return false;
@@ -90,16 +101,16 @@ public:
         }
       }
     }
-    else if (dataDim == 2)
+    else if (pointsDim == 2)
     {
       if (currentDim == 0)
       {
         printf("DBG: 2D, no previous points\n");
         this->coordTypes[0] = coordTypes[0];
         this->coordTypes[1] = coordTypes[1];
-        for (const std::vector<double>& d : data)
+        for (const std::vector<double>& point : points)
         {
-          std::array<double, 2> coord = { d[0], d[1] };
+          std::array<double, 2> coord = { point[0], point[1] };
           coords2D.push_back(coord);
         }
       }
@@ -125,9 +136,14 @@ public:
           printf("ERROR (USR): Input coordinates don't match existing data.\n");
           return false;
         }
+        if (coords2D.size() != points.size())
+        {
+          printf("ERROR (USR): Number of new points doesn't match previous data.\n.");
+          return false;
+        }
         for (int i = 0; i < coords2D.size(); i++)
         {
-          if (coords2D[i][0] != data[i][0] || coords2D[i][1] != data[i][1])
+          if (coords2D[i][0] != points[i][0] || coords2D[i][1] != points[i][1])
           {
             printf("ERROR (USR): New data points don't match previous data.\n.");
             return false;
@@ -158,13 +174,19 @@ class DataValues
   std::vector<std::vector<double>> values;
 
 public:
-  void set(int id, const std::vector<double>& data)
+  void set_values(int id, const std::vector<double>& values)
   {
-    values[id] = std::vector<double>(data);
+    this->values[id] = std::vector<double>(values);
+  }
+
+  void set_count(int count)
+  {
+    values.resize(count);
   }
 };
 
-DataCoords dataCoords;
+DataPoints dataPoints;
+DataValues dataValues;
 
 // Trim leading and trailing whitespace from str IN PLACE.
 // Return a null-terminated substring of str with trimmed whitespace.
@@ -189,7 +211,7 @@ static char* trim_whitespace(char* str)
 
 // Read null-terminated string line as a list of comma-separated doubles.
 // Return a vector of the read doubles.
-static std::vector<double> read_line_data(char* line)
+static std::vector<double> read_line_doubles(char* line)
 {
   std::vector<double> data;
 
@@ -247,7 +269,7 @@ bool load_data(const char* path, int dim, int paramID, CoordType coordTypes[2])
   while (fgets(buf, BUF_SIZE, fp))
   {
     char* trimmed = trim_whitespace(buf);
-    std::vector<double> lineData = read_line_data(trimmed);
+    std::vector<double> lineData = read_line_doubles(trimmed);
     if (lineData.empty())
     {
       printf("ERROR (USR): unable to read line %d\n", lineNumber);
@@ -267,10 +289,29 @@ bool load_data(const char* path, int dim, int paramID, CoordType coordTypes[2])
 
   // Sort data in the ascending order given by compare_data.
   std::sort(std::begin(data), std::end(data), compare_data);
-  if (!dataCoords.new_data(data, coordTypes))
+
+  std::vector<std::vector<double>> points;
+  std::vector<double> values;
+  for (const std::vector<double>& d : data)
   {
-    return false;
+    std::vector<double> point;
+    for (int i = 0; i < dim; i++)
+      point.push_back(d[i]);
+
+    points.push_back(point);
+    values.push_back(d[dim]);
   }
 
+  if (!dataPoints.new_points(points, coordTypes))
+    return false;
+
+  dataValues.set_values(paramID, values);
+
+  return true;
+}
+
+bool set_parameter_count(int count)
+{
+  dataValues.set_count(count);
   return true;
 }

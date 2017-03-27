@@ -59,12 +59,42 @@ function fileChange(event)
   var parameter = $(event.target).closest(".parameter");
   var paramName = parameter.find(".paramName").text();
   var paramID = plasmaParameterNames.indexOf(paramName);
-  var checked = parameter.find(".paramDataType").find("input:checked");
+
+  var checkedRadioDim = parameter.find(".paramDataType").find("input:checked");
   var dataDim = 1;
-  if (checked.attr("class") == "radio2D")
+  if (checkedRadioDim.attr("class") == "radio2D")
     dataDim = 2;
 
-  var coordTypes = [2, -1];
+  var coordTypes = [-1, -1];
+  if (dataDim == 1)
+  {
+    var checkedRadioFormat = parameter.find(".format1D").find("input:checked");
+    if (checkedRadioFormat.attr("class") == "radioX")
+      coordTypes[0] = 0;
+    else if (checkedRadioFormat.attr("class") == "radioY")
+      coordTypes[0] = 1;
+    else if (checkedRadioFormat.attr("class") == "radioZ")
+      coordTypes[0] = 2;
+  }
+  else
+  {
+    var checkedRadioFormat = parameter.find(".format2D").find("input:checked");
+    if (checkedRadioFormat.attr("class") == "radioXY")
+    {
+      coordTypes[0] = 0;
+      coordTypes[1] = 1;
+    }
+    if (checkedRadioFormat.attr("class") == "radioXZ")
+    {
+      coordTypes[0] = 0;
+      coordTypes[1] = 2;
+    }
+    if (checkedRadioFormat.attr("class") == "radioYZ")
+    {
+      coordTypes[0] = 1;
+      coordTypes[1] = 2;
+    }
+  }
 
   const cppmain = require("./cpp/build/Release/main");
   console.log(cppmain.load_file(filepath, dataDim, paramID, coordTypes));

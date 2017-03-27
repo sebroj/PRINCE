@@ -21,7 +21,8 @@ private:
 public:
   // Processes the new data points given by data.
   // Data must be sorted in ascending order (first by [0], then by [1], if 2D).
-  bool new_data(const std::vector<std::vector<double>>& data)
+  bool new_data(const std::vector<std::vector<double>>& data,
+    CoordType coordTypes[2])
   {
     if (data.empty())
     {
@@ -41,28 +42,48 @@ public:
       if (currentDim == 0)
       {
         printf("DBG: 1D, no previous points\n");
+        this->coordTypes[0] = coordTypes[0];
         for (const std::vector<double>& d : data)
           coords1D.push_back(d[0]);
       }
       else if (currentDim == 1)
       {
-        printf("DBG: 1D, existing 1D points\n");
-        for (int i = 0; i < coords1D.size(); i++)
+        if (this->coordTypes[0] == coordTypes[0])
         {
-          if (coords1D[i] != data[i][0])
+          printf("DBG: 1D, existing 1D points, same coords\n");
+          for (int i = 0; i < coords1D.size(); i++)
           {
-            printf("ERROR (USR): New data points don't match previous data.\n.");
-            return false;
+            if (coords1D[i] != data[i][0])
+            {
+              printf("ERROR (USR): New data points don't match previous data.\n.");
+              return false;
+            }
           }
+        }
+        else
+        {
+          printf("DBG: 1D, existing 1D points, different coords (convert)\n");
+          printf("DBG: UNIMPLEMENTED\n");
         }
       }
       else if (currentDim == 2)
       {
         printf("DBG: 1D, existing 2D points\n");
+        int coord;
+        if (this->coordTypes[0] == coordTypes[0])
+          coord = 0;
+        else if (this->coordTypes[1] == coordTypes[1])
+          coord = 1;
+        else
+        {
+          printf("ERROR (USR): Input coordinate doesn't match existing data.\n");
+          return false;
+        }
+
         for (int i = 0; i < coords2D.size(); i++)
         {
           // TODO determine which coordinate to check
-          if (coords2D[i][0] != data[i][0])
+          if (coords2D[i][coord] != data[i][coord])
           {
             printf("ERROR (USR): New data points don't match previous data.\n.");
             return false;
@@ -75,6 +96,8 @@ public:
       if (currentDim == 0)
       {
         printf("DBG: 2D, no previous points\n");
+        this->coordTypes[0] = coordTypes[0];
+        this->coordTypes[1] = coordTypes[1];
         for (const std::vector<double>& d : data)
         {
           std::array<double, 2> coord = { d[0], d[1] };
@@ -84,11 +107,25 @@ public:
       else if (currentDim == 1)
       {
         printf("DBG: 2D, existing 1D points (add stuff)\n");
+        if (this->coordTypes[0] != coordTypes[0]
+          && this->coordTypes[0] != coordTypes[1])
+        {
+          // TODO more info on these errors
+          printf("ERROR (USR): Input coordinates don't match existing data.\n");
+          return false;
+        }
         printf("UNIMPLEMENTED\n");
       }
       else if (currentDim == 2)
       {
         printf("DBG: 2D, existing 2D points\n");
+        if (this->coordTypes[0] != coordTypes[0]
+          || this->coordTypes[1] != coordTypes[1])
+        {
+          // TODO more info on these errors
+          printf("ERROR (USR): Input coordinates don't match existing data.\n");
+          return false;
+        }
         for (int i = 0; i < coords2D.size(); i++)
         {
           if (coords2D[i][0] != data[i][0] || coords2D[i][1] != data[i][1])
@@ -220,7 +257,7 @@ bool load_data(const char* path, int dim, int paramID, CoordType coordTypes[2])
 
   // Sort data in the ascending order given by compare_data.
   std::sort(std::begin(data), std::end(data), compare_data);
-  if (!dataCoords.new_data(data))
+  if (!dataCoords.new_data(data, coordTypes))
   {
     return false;
   }

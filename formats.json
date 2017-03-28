@@ -1,13 +1,29 @@
 {
   "Plasma Parameters": [
-    "Electron Density",
-    "Electron Temperature",
-    "Neutral Density",
-    "Electric Potential",
-    "Radial Magnetic Field",
-    "Axial Magnetic Field",
-    "Azimuthal Magnetic Field",
-    "Axial Ion Velocity"
+    {
+      "name": "Electron Density"
+    },
+    {
+      "name": "Electron Temperature"
+    },
+    {
+      "name": "Neutral Density"
+    },
+    {
+      "name": "Electric Potential"
+    },
+    {
+      "name": "Radial Magnetic Field"
+    },
+    {
+      "name": "Axial Magnetic Field"
+    },
+    {
+      "name": "Azimuthal Magnetic Field"
+    },
+    {
+      "name": "Axial Ion Velocity"
+    }
   ],
   "Dispersion Relations": [
     {

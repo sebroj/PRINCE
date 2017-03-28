@@ -55,11 +55,11 @@ function fileChange(event)
 
   var filepath = files[0];
   var filename = filepath.replace(/^.*[\\\/]/, '');
-  var paramFilename = $(event.target).parent().find(".paramFilename");
 
   var parameter = $(event.target).closest(".parameter");
   var paramName = parameter.find(".paramName").text();
   var paramID = plasmaParameterNames.indexOf(paramName);
+  var paramFilename = parameter.find(".paramFilename");
 
   var checkedRadioDim = parameter.find(".paramDataType").find("input:checked");
   var dataDim = 1;
@@ -124,6 +124,9 @@ function param1D(event)
   param.find(".format1D").show();
   param.find(".format2D").hide();
   param.find(".paramDataFile").show();
+  // TODO the string "No file selected" is used multiple times. factor?
+  param.find(".paramFilename").text("No file selected");
+  // TODO send reset message to C++ module
 }
 function param2D(event)
 {
@@ -132,6 +135,8 @@ function param2D(event)
   param.find(".format1D").hide();
   param.find(".format2D").show();
   param.find(".paramDataFile").show();
+  param.find(".paramFilename").text("No file selected");
+  // TODO send reset message to C++ module
 }
 
 function loadFormats()
@@ -140,7 +145,12 @@ function loadFormats()
   var contents = fs.readFileSync("formats.json");
   var formats = JSON.parse(contents);
 
-  plasmaParameterNames = formats["Plasma Parameters"];
+  for (var i = 0; i < formats["Plasma Parameters"].length; i++)
+  {
+    var param = formats["Plasma Parameters"][i];
+    plasmaParameterNames[i] = param["name"];
+  }
+
   for (var i = 0; i < formats["Dispersion Relations"].length; i++)
   {
     var disp = formats["Dispersion Relations"][i];
@@ -150,8 +160,8 @@ function loadFormats()
       if (plasmaParameterNames.indexOf(disp["req"][j]) == -1)
       {
         // TODO make a DEBUG_error type thing for this
-        throw "ERROR - " + disp["name"] + " requires non-existent parameter: "
-          + disp["req"][j];
+        throw "ERROR (DBG): " + disp["name"]
+          + " requires non-existent parameter: " + disp["req"][j];
       }
     }
   }

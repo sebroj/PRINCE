@@ -1,5 +1,7 @@
 # Ignore all node dependencies. They can be downloaded by the developer.
 node_modules
+# Ignore MathJax dependency (at least for now)
+MathJax
 # Ignore build folder for native C++ code, as it might be platform-specific.
 cpp/build
 # Ignore MAC .DS_Store file

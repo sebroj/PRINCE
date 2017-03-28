@@ -255,6 +255,7 @@ static bool compare_data(
 
 bool load_data(const char* path, int dim, int paramID, CoordType coordTypes[2])
 {
+  // TODO when reloading the same param, it is valid to replace existing points
   const int BUF_SIZE = 256;
 
   printf("Load parameter %d's %d-D data from %s\n", paramID, dim, path);
@@ -263,6 +264,7 @@ bool load_data(const char* path, int dim, int paramID, CoordType coordTypes[2])
   if (fp == NULL)
     return false;
 
+  // Read raw data line by line.
   std::vector<std::vector<double>> data;
   char buf[BUF_SIZE];
   int lineNumber = 1;
@@ -290,6 +292,7 @@ bool load_data(const char* path, int dim, int paramID, CoordType coordTypes[2])
   // Sort data in the ascending order given by compare_data.
   std::sort(std::begin(data), std::end(data), compare_data);
 
+  // Separate data into points and values.
   std::vector<std::vector<double>> points;
   std::vector<double> values;
   for (const std::vector<double>& d : data)

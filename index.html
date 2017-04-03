@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8">
     <title>PRINCE</title>
-    <link rel="stylesheet" href="index.css">
+
+    <link rel="stylesheet" href="node_modules/electron-tabs/electron-tabs.css">
 
     <!-- HACKYNESS FOR USING JQUERY WITH ELECTRON -->
     <!-- Insert this before script imports  -->
@@ -22,78 +23,12 @@
     if (window.module)
       module = window.module;
     </script>
-
   </head>
   <body>
-    <div id="title" style="text-align: center">
-      <h1>PRINCE</h1>
+    <div class="etabs-tabgroup">
+      <div class="etabs-tabs"></div>
+      <div class="etabs-buttons"></div>
     </div>
-    <div id="solverSettings"></div>
-    <div class="input" style="text-align: center">
-      <h2>Solver Settings</h2>
-      <p>Dispersion Relation</p>
-      <!-- Dispersion relation dropdown list -->
-      <div class="dropdown">
-        <button id="dropdownButton" onclick="toggleDropdown()">-- Select --</button>
-        <div id="dispDropdown" class="dropdown-content">
-          <button class="dispButton">Simplified Esipchuk-Tilinin</button>
-          <button class="dispButton">Long wavelength gradient drift</button>
-          <button class="dispButton">High-frequency ExB drift</button>
-          <button class="dispButton">Damped warm Langmuir waves</button>
-        </div>
-      </div>
-      <h2>Plasma Parameters</h2>
-      <div id="required">
-        <p>Required</p>
-      </div>
-      <div id="other">
-        <p>Other</p>
-        <!-- Parameter prototype. This gets cloned in index.js -->
-        <div class="parameter">
-          <div class="paramName">
-            Input Field Name
-          </div>
-          <div class="paramDataType">
-            <div style="display: inline-block;">
-              <input type="radio" class="radio0D"> 0D
-              <input type="radio" class="radio1D"> 1D
-              <input type="radio" class="radio2D"> 2D
-            </div>
-          </div>
-          <div class="paramDataValue">
-            <div style="display: inline-block;">
-              <div style="float:left; margin-right:5px;">
-                Value:
-              </div>
-              <form action="javascript:void(0);" style="display: inline-block">
-                <input type="text" class="paramValueField">
-                <input type="submit" class="submitHidden" style="display:none;">
-              </form>
-            </div>
-          </div>
-          <div class="paramDataFormat">
-            <div class="format1D" style="display: inline-block;">
-              <input type="radio" class="radioX" checked> x
-              <input type="radio" class="radioY"> y
-              <input type="radio" class="radioZ"> z
-            </div>
-            <div class="format2D" style="display: inline-block;">
-              <input type="radio" class="radioXY" checked> x, y
-              <input type="radio" class="radioXZ"> x, z
-              <input type="radio" class="radioYZ"> y, z
-            </div>
-          </div>
-          <div class="paramDataFile">
-            <div style="display: inline-block;">
-              <button class="paramFileButton">Select File</button>
-              <div class="paramFilename">
-                No file selected
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Parameter prototype END. -->
-      </div>
-    </div>
+    <div class="etabs-views"></div>
   </body>
 </html>

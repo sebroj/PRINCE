@@ -191,9 +191,6 @@ public:
   }
 };
 
-DataPoints dataPoints;
-DataValues dataValues;
-
 // Trim leading and trailing whitespace from str IN PLACE.
 // Return a null-terminated substring of str with trimmed whitespace.
 static char* trim_whitespace(char* str)
@@ -253,9 +250,8 @@ static bool compare_data(
   const std::vector<double>& d1,
   const std::vector<double>& d2)
 {
-  if (d1[0] == d2[0])
+  if (d1[0] == d2[0] && d1.size() > 2)
     return d1[1] <= d2[1];
-
   return d1[0] < d2[0];
 }
 
@@ -263,8 +259,10 @@ bool load_data(const char* path, int dim, int paramID, CoordType coordTypes[2])
 {
   const int BUF_SIZE = 256;
 
-  printf("DBG: Load parameter %d's %d-D data from %s\n", paramID, dim, path);
-  printf("DBG:    Coordinates: %d, %d\n", coordTypes[0], coordTypes[1]);
+  printf("DBG: parameter: %d\n", paramID);
+  printf("     dimension: %d-D\n", dim);
+  printf("     coords:    %d, %d\n", coordTypes[0], coordTypes[1]);
+  printf("     filepath:  %s\n", path);
   FILE* fp = fopen(path, "r");
   if (fp == NULL)
     return false;
@@ -297,6 +295,10 @@ bool load_data(const char* path, int dim, int paramID, CoordType coordTypes[2])
   // Sort data in the ascending order given by compare_data.
   std::sort(std::begin(data), std::end(data), compare_data);
 
+  // TODO check if data points are complete (for 2D grid)
+  // example implementation: for every data point, reverse (x, y) coords,
+  // insert these to new list, sort this list, then check if newList == dataPts
+
   // Separate data into points and values.
   std::vector<std::vector<double>> points;
   std::vector<double> values;
@@ -310,16 +312,16 @@ bool load_data(const char* path, int dim, int paramID, CoordType coordTypes[2])
     values.push_back(d[dim]);
   }
 
-  if (!dataPoints.new_points(points, coordTypes))
-    return false;
+  //if (!dataPoints.new_points(points, coordTypes))
+  //  return false;
 
-  dataValues.set_values(paramID, values);
+  //dataValues.set_values(paramID, values);
 
   return true;
 }
 
 bool set_parameter_count(int count)
 {
-  dataValues.set_count(count);
+  //dataValues.set_count(count);
   return true;
 }

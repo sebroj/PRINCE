@@ -8,6 +8,12 @@
 
 #include "node_main.h"
 
+class ParameterRaw
+{
+  std::vector<std::vector<double>> points;
+  std::vector<double> values;
+};
+
 // TODO all user errors have been labeled as "ERROR (USR): message"
 // centralize this logging system. Messages will be improved in future revision.
 
@@ -255,11 +261,10 @@ static bool compare_data(
 
 bool load_data(const char* path, int dim, int paramID, CoordType coordTypes[2])
 {
-  // TODO when reloading the same param, it is valid to replace existing points
   const int BUF_SIZE = 256;
 
-  printf("Load parameter %d's %d-D data from %s\n", paramID, dim, path);
-  printf("Coordinates: %d, %d\n", coordTypes[0], coordTypes[1]);
+  printf("DBG: Load parameter %d's %d-D data from %s\n", paramID, dim, path);
+  printf("DBG:    Coordinates: %d, %d\n", coordTypes[0], coordTypes[1]);
   FILE* fp = fopen(path, "r");
   if (fp == NULL)
     return false;

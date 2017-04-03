@@ -1,0 +1,9 @@
+PRINCE - DESIGN INFORMATION
+(work in progress)
+
+Terms:
+Plasma Parameter
+Calculated Parameter
+Dispersion Relation
+Required Parameter
+Optional Parameter

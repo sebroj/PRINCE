@@ -2,17 +2,22 @@
   "name": "prince",
   "version": "0.1.0",
   "description": "Plasma Rocket Instability Characterizer",
-  "repository" : {
-    "type" : "git",
-    "url" : "https://github.com/jmrico01/PRINCE.git"
+  "author": "Jose M Rico",
+  "homepage": "https://github.com/jmrico01/PRINCE",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jmrico01/PRINCE.git"
   },
+  "bugs": {
+    "url": "https://github.com/jmrico01/PRINCE/issues"
+  },
+  "license": "UNLICENSED",
   "main": "main.js",
   "scripts": {
     "start": "./node_modules/.bin/electron .",
-    "build-cpp": "node ./cpp/build_cpp.js"
+    "build-cpp": "node ./cpp/build_cpp.js",
+    "package": "./node_modules/.bin/electron-packager ."
   },
-  "author": "Jose M Rico",
-  "license": "UNLICENSED",
   "dependencies": {
     "electron": "^1.6.2"
   }

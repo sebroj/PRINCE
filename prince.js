@@ -109,6 +109,7 @@ function fileChange(event)
   }
 }
 
+// TODO factor 0-D, 1-D, and 2-D param UI elements into one div?
 function param0D(event)
 {
   var param = $(event.target).closest(".parameter");
@@ -116,6 +117,7 @@ function param0D(event)
   param.find(".format1D").hide();
   param.find(".format2D").hide();
   param.find(".paramDataFile").hide();
+  param.find(".paramPlot").hide();
 }
 function param1D(event)
 {
@@ -126,7 +128,8 @@ function param1D(event)
   param.find(".paramDataFile").show();
   // TODO the string "No file selected" is used multiple times. factor?
   param.find(".paramFilename").text("No file selected");
-  // TODO send reset message to C++ module
+  param.find(".paramPlot").show();
+  // TODO send reset message to C++ module (?)
 }
 function param2D(event)
 {
@@ -136,7 +139,8 @@ function param2D(event)
   param.find(".format2D").show();
   param.find(".paramDataFile").show();
   param.find(".paramFilename").text("No file selected");
-  // TODO send reset message to C++ module
+  param.find(".paramPlot").show();
+  // TODO send reset message to C++ module (?)
 }
 
 function loadFormats()
@@ -203,6 +207,7 @@ $(function() {
     clone.find(".format1D").hide();
     clone.find(".format2D").hide();
     clone.find(".paramDataFile").hide();
+    clone.find(".paramPlot").hide();
   }
   parameter.remove();
 

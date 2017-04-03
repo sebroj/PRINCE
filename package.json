@@ -21,5 +21,8 @@
   "dependencies": {
     "d3": "^4.7.4",
     "electron": "^1.6.2"
+  },
+  "devDependencies": {
+    "nan": "^2.5.1"
   }
 }

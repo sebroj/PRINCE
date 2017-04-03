@@ -7,6 +7,8 @@
 
 #include "node_main.h"
 
+// TODO port to nan for compatibility and robustness.
+//#include <nan.h>
 #include <node.h>
 
 #include <cstdio>
@@ -14,7 +16,6 @@
 
 #include "load_data.h"
 
-// TODO port to nan for compatibility and robustness.
 using v8::Exception;
 using v8::FunctionCallbackInfo;
 using v8::Isolate;

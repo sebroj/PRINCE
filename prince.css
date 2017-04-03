@@ -50,7 +50,7 @@
 .parameter {
   /*width: 40%;*/
   width: 300px;
-  height: 120px;
+  height: 130px;
   border-style: solid;
   border-width: 2px;
   border-color: #444444;
@@ -63,7 +63,7 @@
   text-align: center;
   vertical-align: middle;
 }
-.paramDataType, .paramDataFormat, .paramDataFile, .paramDataValue {
+.paramDataType, .paramDataFormat, .paramDataFile, .paramDataValue, .paramPlot {
   width: 100%;
   height: 22px;
   line-height: 22px;

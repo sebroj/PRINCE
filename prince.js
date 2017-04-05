@@ -12,7 +12,10 @@ var requiredParameters = {};
 // ===================================================
 
 // Load native C++ module.
-const cppmain = require("./cpp/build/Release/main");
+if process.platform == "win32"
+  const cppmain = require("./cpp/build/Release/main");
+if process.platform == "darwin"
+  const cppmain = require("./cpp/build/Release/obj.target");
 
 /* Toggle between hiding and showing the dropdown content */
 function toggleDropdown()

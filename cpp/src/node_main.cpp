@@ -115,6 +115,52 @@ static void load_file(const FunctionCallbackInfo<Value>& args)
   args.GetReturnValue().Set(load_data(cstring, dataDim, paramID, coordTypes));
 }
 
+static void get_param_data(const FunctionCallbackInfo<Value>& args)
+{
+  Isolate* isolate = args.GetIsolate();
+
+  // Check for valid arguments.
+  if (args.Length() != 1)
+  {
+    DEBUG_error("get_param_data expected 1 arguments");
+    return;
+  }
+  if (!args[0]->IsInt32())
+  {
+    DEBUG_error("get_param_data arg 1 should be an int (parameter ID)");
+    return;
+  }
+  int paramID = args[0]->Int32Value();
+
+  const std::vector<double>* valuesPtr = get_values(paramID);
+  if (valuesPtr == nullptr)
+  {
+    args.GetReturnValue().Set(v8::Null(isolate));
+    return;
+  }
+  const std::vector<std::vector<double>>& points = *get_points(paramID);
+  const std::vector<double>& values = *valuesPtr;
+  if (points[0].size() != 1)
+  {
+    args.GetReturnValue().Set(v8::Null(isolate));
+    return;
+  }
+
+  Local<v8::Array> data = v8::Array::New(isolate, (int)points.size() * 2);
+  for (int i = 0; i < points.size(); i++)
+  {
+    Local<v8::Number> test = v8::Number::New(isolate, points[i][0]);
+    data->Set(i, test);
+  }
+  for (int i = 0; i < values.size(); i++)
+  {
+    Local<v8::Number> test = v8::Number::New(isolate, values[i]);
+    data->Set((int)points.size() + i, test);
+  }
+
+  args.GetReturnValue().Set(data);
+}
+
 static void setup_parameters(const FunctionCallbackInfo<Value>& args)
 {
   Isolate* isolate = args.GetIsolate();
@@ -140,6 +186,7 @@ static void init(Local<Object> exports)
 {
   NODE_SET_METHOD(exports, "load_file", load_file);
   NODE_SET_METHOD(exports, "setup_parameters", setup_parameters);
+  NODE_SET_METHOD(exports, "get_param_data", get_param_data);
 }
 
 NODE_MODULE(main, init)

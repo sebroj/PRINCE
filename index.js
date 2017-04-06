@@ -52,7 +52,7 @@ function paramPlot(event)
   var paramID = plasmaParameterNames.indexOf(paramName);
 
   // set the dimensions and margins of the graph
-  var margin = {top: 20, right: 20, bottom: 30, left: 50},
+  var margin = {top: 20, right: 20, bottom: 30, left: 100},
     width = 600 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom;
 
@@ -72,23 +72,28 @@ function paramPlot(event)
           "translate(" + margin.left + "," + margin.top + ")");
 
   // Get the data
-  data = [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0,
-    10.0, 4.0, 5.0, 50.0, 2.0, 60.0, 43.0, 42.0];
-
+  data = cppmain.get_param_data(paramID);
+  if (data == null) {
+    console.log("No data found!");
+    return;
+  }
+  console.log(data);
   dataPairs = [];
   for (var i = 0; i < data.length / 2; i++) {
     dataPairs.push([data[i], data[i + data.length / 2]]);
   }
 
   // Scale the range of the data
-  x.domain([0, d3.max(dataPairs, function(d) { return d[0] })]);
-  y.domain([0, d3.max(dataPairs, function(d) { return d[1] })]);
+  //x.domain([0, d3.max(dataPairs, function(d) { return d[0]; })]);
+  //y.domain([0, d3.max(dataPairs, function(d) { return d[1]; })]);
+  x.domain(d3.extent(dataPairs, function(d) { return d[0]; }));
+  y.domain(d3.extent(dataPairs, function(d) { return d[1]; }));
 
   // Add the scatterplot
   svg.selectAll("dot")
     .data(dataPairs)
     .enter().append("circle")
-    .attr("r", 5)
+    .attr("r", 1)
     .attr("cx", function(d) { return x(d[0]); })
     .attr("cy", function(d) { return y(d[1]); });
 

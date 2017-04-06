@@ -30,7 +30,16 @@ public:
 
   bool is_set()
   {
-    return points.empty();
+    return !points.empty();
+  }
+
+  const std::vector<std::vector<double>>* get_points()
+  {
+    return &points;
+  }
+  const std::vector<double>* get_values()
+  {
+    return &values;
   }
 };
 
@@ -349,4 +358,19 @@ bool set_parameter_count(int count)
   //dataValues.set_count(count);
   rawParams.resize(count);
   return true;
+}
+
+const std::vector<std::vector<double>>* get_points(int paramID)
+{
+  if (!rawParams[paramID].is_set())
+    return nullptr;
+
+  return rawParams[paramID].get_points();
+}
+const std::vector<double>* get_values(int paramID)
+{
+  if (!rawParams[paramID].is_set())
+    return nullptr;
+
+  return rawParams[paramID].get_values();
 }

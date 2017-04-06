@@ -11,7 +11,7 @@ const WINDOW_SIZE = [1280, 800];
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let win
+var win
 
 function createWindow()
 {
@@ -23,7 +23,7 @@ function createWindow()
 
   // and load the index.html of the app.
   win.loadURL(url.format({
-    pathname: path.join(__dirname, 'prince.html'),
+    pathname: path.join(__dirname, 'index.html'),
     protocol: 'file:',
     slashes: true
   }));

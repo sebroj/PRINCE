@@ -10,19 +10,27 @@
 
 class ParameterRaw
 {
-  int id;
-  CoordTypes coordTypes[2];
+  CoordType coordTypes[2];
   std::vector<std::vector<double>> points;
   std::vector<double> values;
 
-  ParameterRaw(int id, CoordTypes coordTypes[2],
+public:
+  ParameterRaw() {}
+
+  ParameterRaw(
+    CoordType coordTypes[2],
     const std::vector<std::vector<double>>& points,
     const std::vector<double>& values)
   {
-    this.id = id;
-    this.coordTypes = { coordTypes[0], coordTypes[1] };
-    this.points = std::vector<std::vector<double>>(points);
-    this.values = std::vector<double>(values);
+    this->coordTypes[0] = coordTypes[0];
+    this->coordTypes[1] = coordTypes[1];
+    this->points = points;
+    this->values = values;
+  }
+
+  bool is_set()
+  {
+    return points.empty();
   }
 };
 
@@ -326,7 +334,8 @@ bool load_data(const char* path, int dim, int paramID, CoordType coordTypes[2])
     values.push_back(d[dim]);
   }
 
-  rawParams.push_back(ParameterRaw(paramID, coordTypes, points, values));
+  ParameterRaw parameterRaw(coordTypes, points, values);
+  rawParams[paramID] = parameterRaw;
   //if (!dataPoints.new_points(points, coordTypes))
   //  return false;
 
@@ -338,6 +347,6 @@ bool load_data(const char* path, int dim, int paramID, CoordType coordTypes[2])
 bool set_parameter_count(int count)
 {
   //dataValues.set_count(count);
-  rawParams.set_count(count);
+  rawParams.resize(count);
   return true;
 }

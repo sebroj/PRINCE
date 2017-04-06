@@ -3,8 +3,8 @@
         {
             "target_name": "main",
             "sources": [
-                "node_main.cpp",
-                "load_data.cpp"
+                "src/node_main.cpp",
+                "src/load_data.cpp"
             ],
             "include_dirs": [
                 "<!(node -e \"require('nan')\")"

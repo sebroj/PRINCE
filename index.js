@@ -87,7 +87,11 @@ function paramPlot(event)
   //x.domain([0, d3.max(dataPairs, function(d) { return d[0]; })]);
   //y.domain([0, d3.max(dataPairs, function(d) { return d[1]; })]);
   x.domain(d3.extent(dataPairs, function(d) { return d[0]; }));
-  y.domain(d3.extent(dataPairs, function(d) { return d[1]; }));
+  extentY = d3.extent(dataPairs, function(d) { return d[1]; });
+  if (extentY[0] >= 0)
+    y.domain([0, extentY[1]]);
+  else
+    y.domain(extentY);
 
   // Add the scatterplot
   svg.selectAll("dot")

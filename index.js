@@ -77,7 +77,6 @@ function paramPlot(event)
     console.log("No data found!");
     return;
   }
-  console.log(data);
   dataPairs = [];
   for (var i = 0; i < data.length / 2; i++) {
     dataPairs.push([data[i], data[i + data.length / 2]]);

@@ -1,31 +1,43 @@
 {
-  "Plasma Parameters": [
+  "PlasmaParameters": [
     {
-      "name": "Electron Density"
+      "name": "Electron Density",
+      "alias": "ne"
     },
     {
-      "name": "Electron Temperature"
+      "name": "Electron Temperature",
+      "alias": "Te"
     },
     {
-      "name": "Neutral Density"
+      "name": "Neutral Density",
+      "alias": "n0"
     },
     {
-      "name": "Electric Potential"
+      "name": "Electric Potential",
+      "alias": "phi"
     },
     {
-      "name": "Radial Magnetic Field"
+      "name": "Radial Magnetic Field",
+      "alias": "Bx"
     },
     {
-      "name": "Axial Magnetic Field"
+      "name": "Axial Magnetic Field",
+      "alias": "Bz"
     },
     {
-      "name": "Azimuthal Magnetic Field"
+      "name": "Azimuthal Magnetic Field",
+      "alias": "By"
     },
     {
-      "name": "Axial Ion Velocity"
+      "name": "Axial Ion Velocity",
+      "alias": "u0"
+    },
+    {
+      "name": "Ion Temperature",
+      "alias": "Ti"
     }
   ],
-  "Dispersion Relations": [
+  "DispersionRelations": [
     {
       "name": "Simplified Esipchuk-Tilinin",
       "req": [

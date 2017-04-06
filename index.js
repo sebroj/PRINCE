@@ -9,6 +9,10 @@ var plasmaParameterNames = [];
 // Dictionary with dispersion relation names as keys
 // and arrays of required plasma parameter names as values.
 var requiredParameters = {};
+
+// TODO use these instead
+var plasmaParameters = [];
+var dispersionRelations = [];
 // ===================================================
 
 // Load native C++ module.
@@ -31,12 +35,12 @@ function dispSelect(event)
   $("#dropdownButton").text(dispersionName);
 
   // Reorder plasma parameters.
-  var params = requiredParameters[dispersionName];
+  var params = dispersionRelations[dispersionName];
   var paramIDs = [];
   for (var i = 0; i < params.length; i++)
     paramIDs.push(plasmaParameterNames.indexOf(params[i]));
 
-  for (var i = 0; i < plasmaParameterNames.length; i++)
+  for (var i = 0; i < plasmaParameters.length; i++)
   {
     if (paramIDs.indexOf(i) >= 0)
       $("#parameter" + i).appendTo($("#required"));
@@ -185,6 +189,7 @@ function param0D(event)
   param.find(".format2D").hide();
   param.find(".paramDataFile").hide();
   param.find(".paramPlot").hide();
+  // TODO send reset message to C++ module (clear data)
 }
 function param1D(event)
 {
@@ -196,7 +201,7 @@ function param1D(event)
   // TODO the string "No file selected" is used multiple times. factor?
   param.find(".paramFilename").text("No file selected");
   param.find(".paramPlot").show();
-  // TODO send reset message to C++ module (?)
+  // TODO send reset message to C++ module (clear data)
 }
 function param2D(event)
 {
@@ -207,7 +212,7 @@ function param2D(event)
   param.find(".paramDataFile").show();
   param.find(".paramFilename").text("No file selected");
   param.find(".paramPlot").show();
-  // TODO send reset message to C++ module (?)
+  // TODO send reset message to C++ module (clear data)
 }
 
 function loadFormats()
@@ -216,15 +221,44 @@ function loadFormats()
   var contents = fs.readFileSync("formats.json");
   var formats = JSON.parse(contents);
 
-  for (var i = 0; i < formats["Plasma Parameters"].length; i++)
+  plasmaParameters = formats["PlasmaParameters"];
+  dispersionRelations = formats["DispersionRelations"];
+
+  // Check all dispersion relation fields for validity
+  // (e.g. references to required parameters)
+  /*for (var i = 0; i < formats["DispersionRelations"].length; i++)
   {
-    var param = formats["Plasma Parameters"][i];
+    var dispRel = formats["DispersionRelations"][i];
+    for (var j = 0; j < dispRel["req"].length; j++)
+    {
+      var req = dispRel["req"][j];
+      var exists = false;
+      for (var p = 0; p < plasmaParameters.length; p++)
+      {
+        if (req === plasmaParameters[p]["alias"])
+        {
+          exists = true;
+          break;
+        }
+      }
+      if (!exists)
+      {
+        // TODO make a DEBUG_error type thing for this
+        throw "ERROR (DBG): " + dispRel["name"]
+          + " requires non-existent parameter: " + dispRel["req"][j];
+      }
+    }
+  }*/
+
+  for (var i = 0; i < formats["PlasmaParameters"].length; i++)
+  {
+    var param = formats["PlasmaParameters"][i];
     plasmaParameterNames[i] = param["name"];
   }
 
-  for (var i = 0; i < formats["Dispersion Relations"].length; i++)
+  for (var i = 0; i < formats["DispersionRelations"].length; i++)
   {
-    var disp = formats["Dispersion Relations"][i];
+    var disp = formats["DispersionRelations"][i];
     requiredParameters[disp["name"]] = disp["req"];
     for (var j = 0; j < disp["req"].length; j++)
     {
@@ -245,16 +279,17 @@ $(function() {
   console.log("Electron version: " + process.versions.electron);
 
   loadFormats();
-  cppmain.setup_parameters(plasmaParameterNames.length);
+  cppmain.setup_parameters(plasmaParameters.length);
 
   // Generate plasma parameter divs.
   var parameter = $(".parameter");
-  for (var i = 0; i < plasmaParameterNames.length; i++)
+  for (var i = 0; i < plasmaParameters.length; i++)
   {
+    var param = plasmaParameters[i];
     var clone = parameter.clone(true);
     clone.attr("id", "parameter" + i);
     clone.appendTo(parameter.parent());
-    clone.find(".paramName").text(plasmaParameterNames[i]);
+    clone.find(".paramName").text(param["name"]);
     // Assign different names to each parameter's radio groups.
     clone.find(".paramDataType").find("input").each(function() {
       if ($(this).attr("type") == "radio")

@@ -35,7 +35,7 @@ function dispSelect(event)
   $("#dropdownButton").text(dispersionName);
 
   // Reorder plasma parameters.
-  var params = dispersionRelations[dispersionName];
+  var params = requiredParameters[dispersionName];
   var paramIDs = [];
   for (var i = 0; i < params.length; i++)
     paramIDs.push(plasmaParameterNames.indexOf(params[i]));
@@ -314,6 +314,8 @@ $(function() {
   parameter.remove();
 
   // Add click callbacks.
+  $("#dropdownButton").click(toggleDropdown);
+
   $(".dispButton").each(function() { $(this).click(dispSelect); });
   $(".paramFileButton").each(function() { $(this).click(fileChange); });
   $(".paramPlotButton").each(function() { $(this).click(paramPlot); });

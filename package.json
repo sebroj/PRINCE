@@ -16,7 +16,7 @@
   "scripts": {
     "start": "./node_modules/.bin/electron .",
     "build-cpp": "node ./cpp/build_cpp.js",
-    "package": "./node_modules/.bin/electron-packager ."
+    "package": "echo UNIMPLEMENTED"
   },
   "dependencies": {
     "d3": "^4.7.4",

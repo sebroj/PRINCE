@@ -16,7 +16,7 @@ var dispersionRelations = [];
 // ===================================================
 
 // Load native C++ module.
-const cppmain = require("./cpp/build/Release/main");
+const cppmain = require("../cpp/build/Release/main");
 
 const d3 = require("d3");
 

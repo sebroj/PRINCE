@@ -218,7 +218,7 @@ function param2D(event)
 function loadFormats()
 {
   var fs = require("fs");
-  var contents = fs.readFileSync("formats.json");
+  var contents = fs.readFileSync("ui/formats.json");
   var formats = JSON.parse(contents);
 
   plasmaParameters = formats["PlasmaParameters"];

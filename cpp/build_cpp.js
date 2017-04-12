@@ -8,6 +8,7 @@ function execCallback(err, stdout, stderr)
   if (err)
     console.log(stderr);
 
+  console.log(stderr); // Mac messages get printed here
   console.log(stdout);
 }
 

@@ -94,7 +94,7 @@ public:
             printf("ERROR (USR): Number of new points doesn't match previous data.\n.");
             return false;
           }
-          for (int i = 0; i < coords1D.size(); i++)
+          for (int i = 0; i < (int)coords1D.size(); i++)
           {
             if (coords1D[i] != points[i][0])
             {
@@ -123,7 +123,7 @@ public:
           return false;
         }
 
-        for (int i = 0; i < coords2D.size(); i++)
+        for (int i = 0; i < (int)coords2D.size(); i++)
         {
           if (coords2D.size() != points.size())
           {
@@ -147,7 +147,7 @@ public:
         this->coordTypes[1] = coordTypes[1];
         for (const std::vector<double>& point : points)
         {
-          std::array<double, 2> coord = { point[0], point[1] };
+          std::array<double, 2> coord = { { point[0], point[1] } };
           coords2D.push_back(coord);
         }
       }
@@ -178,7 +178,7 @@ public:
           printf("ERROR (USR): Number of new points doesn't match previous data.\n.");
           return false;
         }
-        for (int i = 0; i < coords2D.size(); i++)
+        for (int i = 0; i < (int)coords2D.size(); i++)
         {
           if (coords2D[i][0] != points[i][0] || coords2D[i][1] != points[i][1])
           {
@@ -311,7 +311,7 @@ bool load_data(const char* path, int dim, int paramID, CoordType coordTypes[2])
       printf("ERROR (USR): unable to read line %d\n", lineNumber);
       return false;
     }
-    if (lineData.size() != dim + 1)
+    if ((int)lineData.size() != dim + 1)
     {
       printf("    LINE ERROR (USR): Read %d values, expected %d.\n",
         (int)lineData.size(), dim + 1);

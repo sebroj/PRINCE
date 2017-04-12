@@ -15,136 +15,110 @@
       module = undefined;
     }
     </script>
-
     <script type="text/javascript" src="../extern/jquery-3.1.1.min.js"></script>
-    <script type="text/javascript" src="index.js"></script>
-
     <!-- Insert this after script imports -->
     <script>
     if (window.module)
       module = window.module;
     </script>
+
+    <script src="index.js"></script>
+    <script src="../extern/chrome-tabs/js/deps/draggabilly.js"></script>
+    <script src="../extern/chrome-tabs/js/chrome-tabs.js"></script>
+    <script>
+      $(function() {
+        var el = document.querySelector('.chrome-tabs')
+        var chromeTabs = new ChromeTabs()
+
+        chromeTabs.init(el, {
+          tabOverlapDistance: 14,
+          minWidth: 45,
+          maxWidth: 243
+        })
+      })
+
+    </script>
   </head>
   <body>
     <div class="chrome-tabs">
       <div class="chrome-tabs-content">
-        <div class="chrome-tab">
-          <div class="chrome-tab-background">
-            <svg version="1.1" xmlns="http://www.w3.org/2000/svg"><defs><symbol id="topleft" viewBox="0 0 214 29" ><path d="M14.3 0.1L214 0.1 214 29 0 29C0 29 12.2 2.6 13.2 1.1 14.3-0.4 14.3 0.1 14.3 0.1Z"/></symbol><symbol id="topright" viewBox="0 0 214 29"><use xlink:href="#topleft"/></symbol><clipPath id="crop"><rect class="mask" width="100%" height="100%" x="0"/></clipPath></defs><svg width="50%" height="100%" transfrom="scale(-1, 1)"><use xlink:href="#topleft" width="214" height="29" class="chrome-tab-background"/><use xlink:href="#topleft" width="214" height="29" class="chrome-tab-shadow"/></svg><g transform="scale(-1, 1)"><svg width="50%" height="100%" x="-100%" y="0"><use xlink:href="#topright" width="214" height="29" class="chrome-tab-background"/><use xlink:href="#topright" width="214" height="29" class="chrome-tab-shadow"/></svg></g></svg>
-          </div>
-          <div class="chrome-tab-favicon" style="background-image: url('')"></div>
-          <div class="chrome-tab-title">PRINCE</div>
-          <div class="chrome-tab-close"></div>
-        </div>
-        <div class="chrome-tab chrome-tab-current">
-          <div class="chrome-tab-background">
-            <svg version="1.1" xmlns="http://www.w3.org/2000/svg"><defs><symbol id="topleft" viewBox="0 0 214 29" ><path d="M14.3 0.1L214 0.1 214 29 0 29C0 29 12.2 2.6 13.2 1.1 14.3-0.4 14.3 0.1 14.3 0.1Z"/></symbol><symbol id="topright" viewBox="0 0 214 29"><use xlink:href="#topleft"/></symbol><clipPath id="crop"><rect class="mask" width="100%" height="100%" x="0"/></clipPath></defs><svg width="50%" height="100%" transfrom="scale(-1, 1)"><use xlink:href="#topleft" width="214" height="29" class="chrome-tab-background"/><use xlink:href="#topleft" width="214" height="29" class="chrome-tab-shadow"/></svg><g transform="scale(-1, 1)"><svg width="50%" height="100%" x="-100%" y="0"><use xlink:href="#topright" width="214" height="29" class="chrome-tab-background"/><use xlink:href="#topright" width="214" height="29" class="chrome-tab-shadow"/></svg></g></svg>
-          </div>
-          <div class="chrome-tab-favicon" style="background-image: url('')"></div>
-          <div class="chrome-tab-title">Figure 1</div>
-          <div class="chrome-tab-close"></div>
-        </div>
       </div>
       <div class="chrome-tabs-bottom-bar"></div>
-      <!-- Styles to prevent flash after JS initialization -->
-      <style>
-        .chrome-tabs .chrome-tab {
-          width: 243px
-        }
-
-        .chrome-tabs .chrome-tab:nth-child(1) {
-          transform: translate3d(0px, 0, 0)
-        }
-
-        .chrome-tabs .chrome-tab:nth-child(2) {
-          transform: translate3d(229px, 0, 0)
-        }
-      </style>
     </div>
-    <div id="title" style="text-align: center">
-      <h1>PRINCE</h1>
-    </div>
-    <div id="solverSettings"></div>
-    <div class="input" style="text-align: center">
-      <h2>Solver Settings</h2>
-      <p>Dispersion Relation</p>
-      <!-- Dispersion relation dropdown list -->
-      <div class="dropdown">
-        <button id="dropdownButton">-- Select --</button>
-        <div id="dispDropdown" class="dropdown-content">
-          <button class="dispButton">Simplified Esipchuk-Tilinin</button>
-          <button class="dispButton">Long wavelength gradient drift</button>
-          <button class="dispButton">High-frequency ExB drift</button>
-          <button class="dispButton">Damped warm Langmuir waves</button>
-        </div>
+    <div id="PRINCE">
+      <div id="title" style="text-align: center">
+        <h1>PRINCE</h1>
       </div>
-      <h2>Plasma Parameters</h2>
-      <div id="required">
-        <p>Required</p>
-      </div>
-      <div id="other">
-        <p>Other</p>
-        <!-- Parameter prototype. This gets cloned in index.js -->
-        <div class="parameter">
-          <div class="paramName">
-            Input Field Name
-          </div>
-          <div class="paramDataType">
-            <div style="display: inline-block;">
-              <input type="radio" class="radio0D"> 0D
-              <input type="radio" class="radio1D"> 1D
-              <input type="radio" class="radio2D"> 2D
-            </div>
-          </div>
-          <div class="paramDataValue">
-            <div style="display: inline-block;">
-              <div style="float:left; margin-right:5px;">
-                Value:
-              </div>
-              <form action="javascript:void(0);" style="display: inline-block">
-                <input type="text" class="paramValueField">
-                <input type="submit" class="submitHidden" style="display:none;">
-              </form>
-            </div>
-          </div>
-          <div class="paramDataFormat">
-            <div class="format1D" style="display: inline-block;">
-              <input type="radio" class="radioX" checked> x
-              <input type="radio" class="radioY"> y
-              <input type="radio" class="radioZ"> z
-            </div>
-            <div class="format2D" style="display: inline-block;">
-              <input type="radio" class="radioXY" checked> x, y
-              <input type="radio" class="radioXZ"> x, z
-              <input type="radio" class="radioYZ"> y, z
-            </div>
-          </div>
-          <div class="paramDataFile">
-            <div style="display: inline-block;">
-              <button class="paramFileButton">Select File</button>
-              <div class="paramFilename">
-                No file selected
-              </div>
-            </div>
-          </div>
-          <div class="paramPlot">
-            <button class="paramPlotButton">Plot</button>
+      <div id="solverSettings"></div>
+      <div class="input" style="text-align: center">
+        <h2>Solver Settings</h2>
+        <p>Dispersion Relation</p>
+        <!-- Dispersion relation dropdown list -->
+        <div class="dropdown">
+          <button id="dropdownButton">-- Select --</button>
+          <div id="dispDropdown" class="dropdown-content">
+            <button class="dispButton">Simplified Esipchuk-Tilinin</button>
+            <button class="dispButton">Long wavelength gradient drift</button>
+            <button class="dispButton">High-frequency ExB drift</button>
+            <button class="dispButton">Damped warm Langmuir waves</button>
           </div>
         </div>
-        <!-- Parameter prototype END. -->
+        <h2>Plasma Parameters</h2>
+        <div id="required">
+          <p>Required</p>
+        </div>
+        <div id="other">
+          <p>Other</p>
+          <!-- Parameter prototype (this gets cloned in index.js) -->
+          <div class="parameter">
+            <div class="paramName">
+              Input Field Name
+            </div>
+            <div class="paramDataType">
+              <div style="display: inline-block;">
+                <input type="radio" class="radio0D"> 0D
+                <input type="radio" class="radio1D"> 1D
+                <input type="radio" class="radio2D"> 2D
+              </div>
+            </div>
+            <div class="paramDataValue">
+              <div style="display: inline-block;">
+                <div style="float:left; margin-right:5px;">
+                  Value:
+                </div>
+                <form action="javascript:void(0);" style="display: inline-block">
+                  <input type="text" class="paramValueField">
+                  <input type="submit" class="submitHidden" style="display:none;">
+                </form>
+              </div>
+            </div>
+            <div class="paramDataFormat">
+              <div class="format1D" style="display: inline-block;">
+                <input type="radio" class="radioX" checked> x
+                <input type="radio" class="radioY"> y
+                <input type="radio" class="radioZ"> z
+              </div>
+              <div class="format2D" style="display: inline-block;">
+                <input type="radio" class="radioXY" checked> x, y
+                <input type="radio" class="radioXZ"> x, z
+                <input type="radio" class="radioYZ"> y, z
+              </div>
+            </div>
+            <div class="paramDataFile">
+              <div style="display: inline-block;">
+                <button class="paramFileButton">Select File</button>
+                <div class="paramFilename">
+                  No file selected
+                </div>
+              </div>
+            </div>
+            <div class="paramPlot">
+              <button class="paramPlotButton">Plot</button>
+            </div>
+          </div>
+          <!-- Parameter prototype END -->
+        </div>
       </div>
     </div>
-    <script src="extern/chrome-tabs/js/deps/draggabilly.js"></script>
-    <script src="extern/chrome-tabs/js/chrome-tabs.js"></script>
-    <script>
-      var el = document.querySelector('.chrome-tabs')
-      var chromeTabs = new ChromeTabs()
-
-      chromeTabs.init(el, {
-        tabOverlapDistance: 14,
-        minWidth: 45,
-        maxWidth: 243
-      })
-    </script>
   </body>
 </html>

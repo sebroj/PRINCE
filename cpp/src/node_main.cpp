@@ -57,8 +57,6 @@ static const char* to_c_string(const String::Utf8Value& value)
 
 static void load_file(const FunctionCallbackInfo<Value>& args)
 {
-  Isolate* isolate = args.GetIsolate();
-
   // Check for valid arguments.
   if (args.Length() != 4)
   {
@@ -147,12 +145,12 @@ static void get_param_data(const FunctionCallbackInfo<Value>& args)
   }
 
   Local<v8::Array> data = v8::Array::New(isolate, (int)points.size() * 2);
-  for (int i = 0; i < points.size(); i++)
+  for (int i = 0; i < (int)points.size(); i++)
   {
     Local<v8::Number> test = v8::Number::New(isolate, points[i][0]);
     data->Set(i, test);
   }
-  for (int i = 0; i < values.size(); i++)
+  for (int i = 0; i < (int)values.size(); i++)
   {
     Local<v8::Number> test = v8::Number::New(isolate, values[i]);
     data->Set((int)points.size() + i, test);
@@ -163,8 +161,6 @@ static void get_param_data(const FunctionCallbackInfo<Value>& args)
 
 static void setup_parameters(const FunctionCallbackInfo<Value>& args)
 {
-  Isolate* isolate = args.GetIsolate();
-
   // Check for valid arguments.
   if (args.Length() != 1)
   {

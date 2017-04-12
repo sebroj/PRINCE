@@ -5,14 +5,14 @@
 
 // ========== Data loaded from formats.json ==========
 // Array of plasma parameter names.
-var plasmaParameterNames = [];
+let plasmaParameterNames = [];
 // Dictionary with dispersion relation names as keys
 // and arrays of required plasma parameter names as values.
-var requiredParameters = {};
+let requiredParameters = {};
 
 // TODO use these instead
-var plasmaParameters = [];
-var dispersionRelations = [];
+let plasmaParameters = [];
+let dispersionRelations = [];
 // ===================================================
 
 // Load native C++ module.
@@ -20,7 +20,7 @@ const cppmain = require("../cpp/build/Release/main");
 
 const d3 = require("d3");
 
-var chromeTabs;
+let chromeTabs = null;
 
 /* Toggle between hiding and showing the dropdown content */
 function toggleDropdown()
@@ -39,10 +39,10 @@ function dispSelect(event)
   // Reorder plasma parameters.
   var params = requiredParameters[dispersionName];
   var paramIDs = [];
-  for (var i = 0; i < params.length; i++)
+  for (let i = 0; i < params.length; i++)
     paramIDs.push(plasmaParameterNames.indexOf(params[i]));
 
-  for (var i = 0; i < plasmaParameters.length; i++)
+  for (let i = 0; i < plasmaParameters.length; i++)
   {
     if (paramIDs.indexOf(i) >= 0)
       $("#parameter" + i).appendTo($("#required"));
@@ -57,6 +57,24 @@ function paramPlot(event)
   var paramName = parameter.find(".paramName").text();
   var paramID = plasmaParameterNames.indexOf(paramName);
 
+  // Try to get the data
+  data = cppmain.get_param_data(paramID);
+  if (data == null) {
+    // TODO handle user errors globally
+    console.log("ERROR (USR): No data found!");
+    return;
+  }
+  dataPairs = [];
+  for (let i = 0; i < data.length / 2; i++) {
+    dataPairs.push([data[i], data[i + data.length / 2]]);
+  }
+
+  // Create new tab for figure
+  chromeTabs.addTab({title: paramName});
+  var tabElID = paramName.replace(/ /g, "");
+  var $div = $("<div>", {id: tabElID, "class": "tab-page"});
+  $("body").append($div);
+
   // set the dimensions and margins of the graph
   var margin = {top: 20, right: 20, bottom: 30, left: 100},
     width = 600 - margin.left - margin.right,
@@ -66,27 +84,15 @@ function paramPlot(event)
   var x = d3.scaleLinear().range([0, width]);
   var y = d3.scaleLinear().range([height, 0]);
 
-  // append the svg obgect to the body of the page
+  // append the svg obgect to the tab page
   // appends a 'group' element to 'svg'
   // moves the 'group' element to the top left margin
-  d3.select("svg").remove();
-  var svg = d3.select("body").append("svg")
+  var svg = d3.select("#" + tabElID).append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
-
-  // Get the data
-  data = cppmain.get_param_data(paramID);
-  if (data == null) {
-    console.log("No data found!");
-    return;
-  }
-  dataPairs = [];
-  for (var i = 0; i < data.length / 2; i++) {
-    dataPairs.push([data[i], data[i + data.length / 2]]);
-  }
 
   // Scale the range of the data
   //x.domain([0, d3.max(dataPairs, function(d) { return d[0]; })]);
@@ -286,23 +292,26 @@ $(function() {
   // Initialize chrome tabs
   var chromeTabsEl = document.querySelector('.chrome-tabs');
   chromeTabs = new ChromeTabs();
-
   chromeTabs.init(chromeTabsEl, {
     tabOverlapDistance: 14,
     minWidth: 45,
     maxWidth: 243
   });
 
+  $(chromeTabsEl).on("activeTabChange", function(data) {
+    $(".tab-page").each(function() { $(this).hide(); });
+    var tabName = $(".chrome-tab-current").find(".chrome-tab-title").text();
+    tabName = tabName.replace(/ /g, "");
+    $("#" + tabName).show();
+  });
+
   chromeTabs.addTab({title: "PRINCE"});
   var tabEl = $(".chrome-tab-just-added");
-  $(chromeTabsEl).on("activeTabChange", function(data) {
-  });
   tabEl.find(".chrome-tab-close").remove();
-  chromeTabs.addTab({title: "FIGURE 1"});
 
   // Generate plasma parameter divs.
   var parameter = $(".parameter");
-  for (var i = 0; i < plasmaParameters.length; i++)
+  for (let i = 0; i < plasmaParameters.length; i++)
   {
     var param = plasmaParameters[i];
     var clone = parameter.clone(true);

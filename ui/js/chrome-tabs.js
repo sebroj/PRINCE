@@ -43,6 +43,16 @@ const defaultTapProperties = {
 
 let instanceId = 0
 
+$(function() {
+  var $window = $(window);
+  var $stickyEl = $("#sticky-div");
+  var elTop = $stickyEl.offset().top;
+
+  $window.scroll(function() {
+    $stickyEl.toggleClass("sticky", $window.scrollTop() > elTop);
+  });
+});
+
 class ChromeTabs
 {
   constructor()
@@ -298,5 +308,3 @@ class ChromeTabs
     }
   }
 }
-
-window.ChromeTabs = ChromeTabs

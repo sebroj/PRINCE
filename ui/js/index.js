@@ -20,6 +20,8 @@ const cppmain = require("../cpp/build/Release/main");
 
 const d3 = require("d3");
 
+var chromeTabs;
+
 /* Toggle between hiding and showing the dropdown content */
 function toggleDropdown()
 {
@@ -280,6 +282,23 @@ $(function() {
 
   loadFormats();
   cppmain.setup_parameters(plasmaParameters.length);
+
+  // Initialize chrome tabs
+  var chromeTabsEl = document.querySelector('.chrome-tabs');
+  chromeTabs = new ChromeTabs();
+
+  chromeTabs.init(chromeTabsEl, {
+    tabOverlapDistance: 14,
+    minWidth: 45,
+    maxWidth: 243
+  });
+
+  chromeTabs.addTab({title: "PRINCE"});
+  var tabEl = $(".chrome-tab-just-added");
+  $(chromeTabsEl).on("activeTabChange", function(data) {
+  });
+  tabEl.find(".chrome-tab-close").remove();
+  chromeTabs.addTab({title: "FIGURE 1"});
 
   // Generate plasma parameter divs.
   var parameter = $(".parameter");

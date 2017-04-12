@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8">
     <title>PRINCE</title>
-    <link rel="stylesheet" href="index.css">
-    <link rel="stylesheet" href="../extern/chrome-tabs/css/chrome-tabs.css">
-    <link rel="stylesheet" href="../extern/chrome-tabs/css/chrome-tabs-dark-theme.css">
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/chrome-tabs.css">
+    <link rel="stylesheet" href="css/chrome-tabs-dark-theme.css">
 
     <!-- HACKYNESS FOR USING JQUERY WITH ELECTRON -->
     <!-- Insert this before script imports  -->
@@ -22,22 +22,9 @@
       module = window.module;
     </script>
 
-    <script src="index.js"></script>
-    <script src="../extern/chrome-tabs/js/deps/draggabilly.js"></script>
-    <script src="../extern/chrome-tabs/js/chrome-tabs.js"></script>
-    <script>
-      $(function() {
-        var el = document.querySelector('.chrome-tabs')
-        var chromeTabs = new ChromeTabs()
-
-        chromeTabs.init(el, {
-          tabOverlapDistance: 14,
-          minWidth: 45,
-          maxWidth: 243
-        })
-      })
-
-    </script>
+    <script src="js/draggabilly.js"></script>
+    <script src="js/chrome-tabs.js"></script>
+    <script src="js/index.js"></script>
   </head>
   <body>
     <div class="chrome-tabs">

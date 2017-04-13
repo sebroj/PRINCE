@@ -13,6 +13,9 @@ enum CoordType
 };
 
 bool set_parameter_count(int count);
-bool load_data(const char* path, int dim, int paramID, CoordType coordTypes[2]);
+void clear_data(int paramID);
+bool load_data(
+  const char* path, const char* alias,
+  int dim, CoordType coordTypes[2]);
 const std::vector<std::vector<double>>* get_points(int paramID);
 const std::vector<double>* get_values(int paramID);

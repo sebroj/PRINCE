@@ -2,7 +2,6 @@
 
 #include <cstdio>
 #include <vector>
-#include <string>
 
 #include <array>
 
@@ -286,11 +285,22 @@ static bool compare_data(
   return d1[0] < d2[0];
 }
 
-bool load_data(const char* path, int dim, int paramID, CoordType coordTypes[2])
+void clear_data(int paramID)
+{
+  printf("DBG: parameter: %d\n", paramID);
+  printf("     data cleared\n");
+
+  ParameterRaw paramRaw;
+  rawParams[paramID] = paramRaw;
+}
+
+bool load_data(
+  const char* path, const char* alias,
+  int dim, CoordType coordTypes[2])
 {
   const int BUF_SIZE = 256;
 
-  printf("DBG: parameter: %d\n", paramID);
+  printf("DBG: parameter: %s\n", alias);
   printf("     dimension: %d-D\n", dim);
   printf("     coords:    %d, %d\n", coordTypes[0], coordTypes[1]);
   printf("     filepath:  %s\n", path);
@@ -344,7 +354,8 @@ bool load_data(const char* path, int dim, int paramID, CoordType coordTypes[2])
   }
 
   ParameterRaw parameterRaw(coordTypes, points, values);
-  rawParams[paramID] = parameterRaw;
+  // TODO use alias
+  rawParams[0] = parameterRaw;
   //if (!dataPoints.new_points(points, coordTypes))
   //  return false;
 

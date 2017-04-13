@@ -22,6 +22,15 @@ const d3 = require("d3");
 
 let chromeTabs = null;
 
+function parameterFromName(name)
+{
+  for (let i = 0; i < plasmaParameters.length; i++)
+  {
+    if (plasmaParameters[i]["name"] === name)
+      return plasmaParameters[i];
+  }
+}
+
 /* Toggle between hiding and showing the dropdown content */
 function toggleDropdown()
 {
@@ -129,6 +138,8 @@ function paramPlot(event)
 /* Input data file has been changed. */
 function fileChange(event)
 {
+  // TODO change parameter coords in CPP when x/y/z or x,y/y,z/x,z option change
+
   // TODO undesired/annoying behavior: click "Select File" button again when
   // dialog is open causes another file upload window to pop up after.
   const dialog = require("electron").remote.dialog;
@@ -141,7 +152,7 @@ function fileChange(event)
 
   var parameter = $(event.target).closest(".parameter");
   var paramName = parameter.find(".paramName").text();
-  var paramID = plasmaParameterNames.indexOf(paramName);
+  var paramInfo = parameterFromName(paramName);
   var paramFilename = parameter.find(".paramFilename");
 
   var checkedRadioDim = parameter.find(".paramDataType").find("input:checked");
@@ -179,10 +190,9 @@ function fileChange(event)
       coordTypes[1] = 2;
     }
   }
-  var success = cppmain.load_file(filepath, dataDim, paramID, coordTypes);
+  var success = cppmain.load_file(filepath, paramInfo["alias"], dataDim, coordTypes);
   if (success)
   {
-    console.log("Success!");
     paramFilename.text(filename);
   }
   else
@@ -196,16 +206,20 @@ function fileChange(event)
 function param0D(event)
 {
   var param = $(event.target).closest(".parameter");
+  var paramName = param.find(".paramName").text();
+  var paramID = plasmaParameterNames.indexOf(paramName);
   param.find(".paramDataValue").show();
   param.find(".format1D").hide();
   param.find(".format2D").hide();
   param.find(".paramDataFile").hide();
   param.find(".paramPlot").hide();
-  // TODO send reset message to C++ module (clear data)
+  cppmain.clear_parameter(paramID);
 }
 function param1D(event)
 {
   var param = $(event.target).closest(".parameter");
+  var paramName = param.find(".paramName").text();
+  var paramID = plasmaParameterNames.indexOf(paramName);
   param.find(".paramDataValue").hide();
   param.find(".format1D").show();
   param.find(".format2D").hide();
@@ -213,18 +227,20 @@ function param1D(event)
   // TODO the string "No file selected" is used multiple times. factor?
   param.find(".paramFilename").text("No file selected");
   param.find(".paramPlot").show();
-  // TODO send reset message to C++ module (clear data)
+  cppmain.clear_parameter(paramID);
 }
 function param2D(event)
 {
   var param = $(event.target).closest(".parameter");
+  var paramName = param.find(".paramName").text();
+  var paramID = plasmaParameterNames.indexOf(paramName);
   param.find(".paramDataValue").hide();
   param.find(".format1D").hide();
   param.find(".format2D").show();
   param.find(".paramDataFile").show();
   param.find(".paramFilename").text("No file selected");
   param.find(".paramPlot").show();
-  // TODO send reset message to C++ module (clear data)
+  cppmain.clear_parameter(paramID);
 }
 
 function loadFormats()
@@ -324,13 +340,13 @@ $(function() {
   });
 
   // Generate plasma parameter divs.
-  var parameter = $(".parameter");
+  var paramPrototype = $(".parameter");
   for (let i = 0; i < plasmaParameters.length; i++)
   {
     var param = plasmaParameters[i];
-    var clone = parameter.clone(true);
+    var clone = paramPrototype.clone(true);
     clone.attr("id", "parameter" + i);
-    clone.appendTo(parameter.parent());
+    clone.appendTo(paramPrototype.parent());
     clone.find(".paramName").text(param["name"]);
     // Assign different names to each parameter's radio groups.
     clone.find(".paramDataType").find("input").each(function() {
@@ -353,7 +369,7 @@ $(function() {
     clone.find(".paramDataFile").hide();
     clone.find(".paramPlot").hide();
   }
-  parameter.remove();
+  paramPrototype.remove();
 
   // Add click callbacks.
   $("#dropdownButton").click(toggleDropdown);

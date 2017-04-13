@@ -21,22 +21,22 @@
       "alias": "phi"
     },
     {
-      "name": "Radial Magnetic Field",
-      "symbol": "B_{x}",
-      "alias": "Bx"
-    },
-    {
-      "name": "Axial Magnetic Field",
+      "name": "Magnetic Field in \\hat{z}",
       "symbol": "B_{z}",
       "alias": "Bz"
     },
     {
-      "name": "Azimuthal Magnetic Field",
+      "name": "Magnetic Field in \\hat{x}",
+      "symbol": "B_{x}",
+      "alias": "Bx"
+    },
+    {
+      "name": "Magnetic Field in \\hat{y}",
       "symbol": "B_{y}",
       "alias": "By"
     },
     {
-      "name": "Axial Ion Velocity",
+      "name": "Ion Velocity in \\hat{z}",
       "symbol": "u_{0}",
       "alias": "u0"
     },
@@ -48,36 +48,26 @@
   ],
   "DispersionRelations": [
     {
-      "name": "Simplified Esipchuk-Tilinin",
-      "req": [
-        "Electron Density",
-        "Axial Ion Velocity",
-        "Radial Magnetic Field",
-        "Electric Potential"
-      ]
-    },
-    {
-      "name": "Long wavelength gradient drift",
-      "req": [
-        "Electron Density",
-        "Electric Potential",
-        "Radial Magnetic Field"
-      ]
-    },
-    {
-      "name": "High-frequency ExB drift",
-      "req": [
-        "Electron Density",
-        "Electron Temperature",
-        "Electric Potential",
-        "Radial Magnetic Field"
-      ]
+      "name": "Simplified Esipchuk-Tilinin waves",
+      "req": [ "ne", "u0", "Bz", "phi" ]
     },
     {
       "name": "Damped warm Langmuir waves",
-      "req": [
-        "Electron Density"
-      ]
+      "req": [ "ne" ],
+      "opt": [ "Te" ]
+    },
+    {
+      "name": "Low-frequency MHD waves",
+      "req": [ "ne", "Bz" ],
+      "opt": [ "Te" ]
+    },
+    {
+      "name": "Electrostatic waves in warm, magnetized plasma",
+      "req": [ "ne", "Te", "Ti", "Bz" ]
+    },
+    {
+      "name": "Electrostatic ion cyclotron wave, forward branch",
+      "req": [ "ne", "Te", "Bz" ]
     }
   ]
 }

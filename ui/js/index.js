@@ -4,13 +4,6 @@
 // Main script for index.html
 
 // ========== Data loaded from formats.json ==========
-// Array of plasma parameter names.
-let plasmaParameterNames = [];
-// Dictionary with dispersion relation names as keys
-// and arrays of required plasma parameter names as values.
-let requiredParameters = {};
-
-// TODO use these instead
 let plasmaParameters = [];
 let dispersionRelations = [];
 // ===================================================
@@ -29,6 +22,27 @@ function parameterFromName(name)
     if (plasmaParameters[i]["name"] === name)
       return plasmaParameters[i];
   }
+  return null;
+}
+
+function parameterFromAlias(alias)
+{
+  for (let i = 0; i < plasmaParameters.length; i++)
+  {
+    if (plasmaParameters[i]["alias"] === name)
+      return plasmaParameters[i];
+  }
+  return null;
+}
+
+function dispersionRelationFromName(name)
+{
+  for (let i = 0; i < dispersionRelations.length; i++)
+  {
+    if (dispersionRelations[i]["name"] === name)
+      return dispersionRelations[i];
+  }
+  return null;
 }
 
 /* Toggle between hiding and showing the dropdown content */
@@ -40,24 +54,18 @@ function toggleDropdown()
 /* Dispersion relation has been selected. */
 function dispSelect(event)
 {
-  // Name of dispersion relation selected.
-  var dispersionName = $(event.target).text();
+  var dispRelName = $(event.target).text();
+  var dispRelInfo = dispersionRelationFromName(dispRelName);
+
   // Update dropdown button text.
-  $("#dropdownButton").text(dispersionName);
+  $("#dropdownButton").text(dispRelName);
 
   // Reorder plasma parameters.
-  var params = requiredParameters[dispersionName];
-  var paramIDs = [];
-  for (let i = 0; i < params.length; i++)
-    paramIDs.push(plasmaParameterNames.indexOf(params[i]));
-
   for (let i = 0; i < plasmaParameters.length; i++)
-  {
-    if (paramIDs.indexOf(i) >= 0)
-      $("#parameter" + i).appendTo($("#required"));
-    else
-      $("#parameter" + i).appendTo($("#other"));
-  }
+    $("#" + plasmaParameters[i]["alias"]).appendTo($("#other"));
+
+  for (let i = 0; i < dispRelInfo["req"].length; i++)
+    $("#" + dispRelInfo["req"][i]).appendTo($("#required"));
 }
 
 function paramPlot(event)
@@ -253,15 +261,40 @@ function loadFormats()
   dispersionRelations = formats["DispersionRelations"];
 
   // Check all dispersion relation fields for validity
-  // (e.g. references to required parameters)
-  /*for (var i = 0; i < formats["DispersionRelations"].length; i++)
+  // 1. Duplicate parameter names/aliases.
+  for (let i = 0; i < plasmaParameters.length; i++)
   {
-    var dispRel = formats["DispersionRelations"][i];
-    for (var j = 0; j < dispRel["req"].length; j++)
+    for (let j = i + 1; j < plasmaParameters.length; j++)
+    {
+      if (plasmaParameters[i]["name"] === plasmaParameters[j]["name"])
+        // TODO make a DEBUG_error type thing for this
+        throw "ERROR (DBG): Duplicate plasma parameter name - "
+          + plasmaParameters[i]["name"];
+      if (plasmaParameters[i]["alias"] === plasmaParameters[j]["alias"])
+        throw "ERROR (DBG): Duplicate plasma parameter alias - "
+          + plasmaParameters[i]["alias"];
+    }
+  }
+  // 2. Duplicate dispersion relation names.
+  for (let i = 0; i < dispersionRelations.length; i++)
+  {
+    for (let j = i + 1; j < dispersionRelations.length; j++)
+    {
+      if (dispersionRelations[i]["name"] === dispersionRelations[j]["name"])
+        // TODO make a DEBUG_error type thing for this
+        throw "ERROR (DBG): Duplicate dispersion relation name - "
+          + dispersionRelations[i]["name"];
+    }
+  }
+  // 3. Existence of dispersion relation required parameters.
+  for (let i = 0; i < dispersionRelations.length; i++)
+  {
+    var dispRel = dispersionRelations[i];
+    for (let j = 0; j < dispRel["req"].length; j++)
     {
       var req = dispRel["req"][j];
       var exists = false;
-      for (var p = 0; p < plasmaParameters.length; p++)
+      for (let p = 0; p < plasmaParameters.length; p++)
       {
         if (req === plasmaParameters[p]["alias"])
         {
@@ -274,27 +307,6 @@ function loadFormats()
         // TODO make a DEBUG_error type thing for this
         throw "ERROR (DBG): " + dispRel["name"]
           + " requires non-existent parameter: " + dispRel["req"][j];
-      }
-    }
-  }*/
-
-  for (var i = 0; i < formats["PlasmaParameters"].length; i++)
-  {
-    var param = formats["PlasmaParameters"][i];
-    plasmaParameterNames[i] = param["name"];
-  }
-
-  for (var i = 0; i < formats["DispersionRelations"].length; i++)
-  {
-    var disp = formats["DispersionRelations"][i];
-    requiredParameters[disp["name"]] = disp["req"];
-    for (var j = 0; j < disp["req"].length; j++)
-    {
-      if (plasmaParameterNames.indexOf(disp["req"][j]) == -1)
-      {
-        // TODO make a DEBUG_error type thing for this
-        throw "ERROR (DBG): " + disp["name"]
-          + " requires non-existent parameter: " + disp["req"][j];
       }
     }
   }
@@ -344,11 +356,11 @@ $(function() {
   var paramPrototype = $(".parameter");
   for (let i = 0; i < plasmaParameters.length; i++)
   {
-    var param = plasmaParameters[i];
-    var clone = paramPrototype.clone(true);
-    clone.attr("id", "parameter" + i);
+    let paramInfo = plasmaParameters[i];
+    let clone = paramPrototype.clone(true);
+    clone.attr("id", paramInfo["alias"]);
     clone.appendTo(paramPrototype.parent());
-    clone.find(".paramName").text(param["name"]);
+    clone.find(".paramName").text(paramInfo["name"]);
     // Assign different names to each parameter's radio groups.
     clone.find(".paramDataType").find("input").each(function() {
       if ($(this).attr("type") == "radio")
@@ -372,6 +384,14 @@ $(function() {
   }
   paramPrototype.remove();
 
+  // Add dispersion relations.
+  for (let i = 0; i < dispersionRelations.length; i++)
+  {
+    let dispRelName = dispersionRelations[i]["name"];
+    let $dispRelButton = $("<button>" + dispRelName + "</button>")
+      .addClass("dispButton")
+      .appendTo("#dispDropdown");
+  }
   // Add click callbacks.
   $("#dropdownButton").click(toggleDropdown);
 

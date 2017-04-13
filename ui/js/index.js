@@ -69,6 +69,10 @@ function paramPlot(event)
     dataPairs.push([data[i], data[i + data.length / 2]]);
   }
 
+  var existingTab = chromeTabs.getTabByName(paramName);
+  if (existingTab != null)
+    chromeTabs.removeTab(existingTab);
+
   // Create new tab for figure
   chromeTabs.addTab({title: paramName});
   var tabElID = paramName.replace(/ /g, "");
@@ -298,16 +302,26 @@ $(function() {
     maxWidth: 243
   });
 
-  $(chromeTabsEl).on("activeTabChange", function(data) {
-    $(".tab-page").each(function() { $(this).hide(); });
-    var tabName = $(".chrome-tab-current").find(".chrome-tab-title").text();
-    tabName = tabName.replace(/ /g, "");
-    $("#" + tabName).show();
-  });
-
   chromeTabs.addTab({title: "PRINCE"});
   var tabEl = $(".chrome-tab-just-added");
   tabEl.find(".chrome-tab-close").remove();
+
+  $(chromeTabsEl).on("activeTabChange", function(data) {
+    var tabEl = data.detail.tabEl;
+    var tabName = $(tabEl).find(".chrome-tab-title").text();
+    var tabPageName = tabName.replace(/ /g, "");
+    $(".tab-page").each(function() { $(this).hide(); });
+    $("#" + tabPageName).show();
+  });
+  $(chromeTabsEl).on("tabAdd", function(data) {
+    tabEl = data.detail.tabEl;
+  });
+  $(chromeTabsEl).on("tabRemove", function(data) {
+    tabEl = data.detail.tabEl;
+    var tabName = $(tabEl).find(".chrome-tab-title").text();
+    var tabPageName = tabName.replace(/ /g, "");
+    $("#" + tabPageName).remove();
+  });
 
   // Generate plasma parameter divs.
   var parameter = $(".parameter");

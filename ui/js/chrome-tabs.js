@@ -36,11 +36,6 @@ const tabTemplate = `
   </div>
 `
 
-const defaultTapProperties = {
-  title: '',
-  favicon: ''
-}
-
 let instanceId = 0
 
 $(function() {
@@ -181,14 +176,28 @@ class ChromeTabs
     return div.firstElementChild
   }
 
+  getTabByName(name)
+  {
+    var matchEl = null;
+
+    this.tabEls.forEach(function(tabEl) {
+      var tabName = $(tabEl).find(".chrome-tab-title").text();
+      if (tabName === name)
+        matchEl = tabEl;
+    });
+
+    return matchEl;
+  }
+
   addTab(tabProperties)
   {
+    const defaultTabProperties = {
+      title: '',
+      favicon: ''
+    }
     const tabEl = this.createNewTabEl()
 
-    tabEl.classList.add('chrome-tab-just-added')
-    setTimeout(() => tabEl.classList.remove('chrome-tab-just-added'), 500)
-
-    tabProperties = Object.assign({}, defaultTapProperties, tabProperties)
+    tabProperties = Object.assign({}, defaultTabProperties, tabProperties)
     this.tabContentEl.appendChild(tabEl)
     this.updateTab(tabEl, tabProperties)
     this.emit('tabAdd', { tabEl })

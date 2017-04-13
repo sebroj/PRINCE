@@ -318,10 +318,6 @@ $(function() {
     maxWidth: 243
   });
 
-  chromeTabs.addTab({title: "PRINCE"});
-  var tabEl = $(".chrome-tab-just-added");
-  tabEl.find(".chrome-tab-close").remove();
-
   $(chromeTabsEl).on("activeTabChange", function(data) {
     var tabEl = data.detail.tabEl;
     var tabName = $(tabEl).find(".chrome-tab-title").text();
@@ -331,6 +327,9 @@ $(function() {
   });
   $(chromeTabsEl).on("tabAdd", function(data) {
     tabEl = data.detail.tabEl;
+    var tabName = $(tabEl).find(".chrome-tab-title").text();
+    if (tabName === "PRINCE")
+      $(tabEl).find(".chrome-tab-close").remove();
   });
   $(chromeTabsEl).on("tabRemove", function(data) {
     tabEl = data.detail.tabEl;
@@ -338,6 +337,8 @@ $(function() {
     var tabPageName = tabName.replace(/ /g, "");
     $("#" + tabPageName).remove();
   });
+
+  chromeTabs.addTab({title: "PRINCE"});
 
   // Generate plasma parameter divs.
   var paramPrototype = $(".parameter");

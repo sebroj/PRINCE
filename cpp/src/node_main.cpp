@@ -32,16 +32,25 @@ enum ArgTypes
   ARG_ARRAY
 };
 
+class StringV8
+{
+  String::Utf8Value str;
+
+public:
+  StringV8(const Local<Value>& value)
+    : str(value)
+  {}
+
+  const char* cstr() const
+  {
+    return *str ? *str : "STRING CONVERSION FAILED";
+  }
+};
+
 static bool func_verify_args(
   const char* funcName,
   const FunctionCallbackInfo<Value>& args,
   const std::vector<ArgTypes>& argTypes);
-
-static const char* to_c_string(const Local<Value>& value)
-{
-  String::Utf8Value str(value);
-  return *str ? *str : "STRING CONVERSION FAILED";
-}
 
 static void clear_parameter(const FunctionCallbackInfo<Value>& args)
 {
@@ -81,14 +90,12 @@ static void load_file(const FunctionCallbackInfo<Value>& args)
   }
 
   // Translate arguments for load procedure.
-  String::Utf8Value filePathStr(args[0]);
-  const char* filePath = to_c_string(args[0]);
-  String::Utf8Value aliasStr(args[1]);
-  const char* alias = to_c_string(args[1]);
+  StringV8 filePath(args[0]);
+  StringV8 alias(args[1]);
   int dataDim = args[2]->Int32Value();
   CoordType coordTypes[2] = { (CoordType)a0, (CoordType)a1 };
 
-  bool success = load_data(filePath, alias, dataDim, coordTypes);
+  bool success = load_data(filePath.cstr(), alias.cstr(), dataDim, coordTypes);
   args.GetReturnValue().Set(success);
 }
 

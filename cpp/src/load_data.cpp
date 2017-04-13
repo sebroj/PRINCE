@@ -3,6 +3,8 @@
 #include <cstdio>
 #include <vector>
 
+#include <string>
+#include <map>
 #include <array>
 
 #include "node_main.h"
@@ -42,7 +44,8 @@ public:
   }
 };
 
-std::vector<ParameterRaw> rawParams;
+//std::vector<ParameterRaw> rawParams;
+std::map<std::string, ParameterRaw> rawParams;
 
 // TODO all user errors have been labeled as "ERROR (USR): message"
 // centralize this logging system. Messages will be improved in future revision.
@@ -285,13 +288,13 @@ static bool compare_data(
   return d1[0] < d2[0];
 }
 
-void clear_data(int paramID)
+void clear_data(const char* alias)
 {
-  printf("DBG: parameter: %d\n", paramID);
+  printf("DBG: parameter: %s\n", alias);
   printf("     data cleared\n");
 
   ParameterRaw paramRaw;
-  rawParams[paramID] = paramRaw;
+  rawParams[alias] = paramRaw;
 }
 
 bool load_data(
@@ -355,7 +358,7 @@ bool load_data(
 
   ParameterRaw parameterRaw(coordTypes, points, values);
   // TODO use alias
-  rawParams[0] = parameterRaw;
+  rawParams[alias] = parameterRaw;
   //if (!dataPoints.new_points(points, coordTypes))
   //  return false;
 
@@ -367,21 +370,22 @@ bool load_data(
 bool set_parameter_count(int count)
 {
   //dataValues.set_count(count);
-  rawParams.resize(count);
+  //rawParams.resize(count);
+  // TODO remove this?
   return true;
 }
 
-const std::vector<std::vector<double>>* get_points(int paramID)
+const std::vector<std::vector<double>>* get_points(const char* alias)
 {
-  if (!rawParams[paramID].is_set())
+  if (!rawParams[alias].is_set())
     return nullptr;
 
-  return rawParams[paramID].get_points();
+  return rawParams[alias].get_points();
 }
-const std::vector<double>* get_values(int paramID)
+const std::vector<double>* get_values(const char* alias)
 {
-  if (!rawParams[paramID].is_set())
+  if (!rawParams[alias].is_set())
     return nullptr;
 
-  return rawParams[paramID].get_values();
+  return rawParams[alias].get_values();
 }

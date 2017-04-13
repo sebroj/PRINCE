@@ -64,10 +64,10 @@ function paramPlot(event)
 {
   var parameter = $(event.target).closest(".parameter");
   var paramName = parameter.find(".paramName").text();
-  var paramID = plasmaParameterNames.indexOf(paramName);
+  var paramInfo = parameterFromName(paramName);
 
   // Try to get the data
-  data = cppmain.get_param_data(paramID);
+  data = cppmain.get_param_data(paramInfo["alias"]);
   if (data == null) {
     // TODO handle user errors globally
     console.log("ERROR (USR): No data found!");
@@ -202,45 +202,45 @@ function fileChange(event)
   }
 }
 
+function paramBoxReset(param)
+{
+  var paramName = param.find(".paramName").text();
+  var paramInfo = parameterFromName(paramName);
+  cppmain.clear_parameter(paramInfo["alias"]);
+
+  param.find(".paramDataValue").hide();
+  param.find(".format1D").hide();
+  param.find(".format2D").hide();
+  param.find(".paramDataFile").hide();
+  param.find(".paramFilename").text("No file selected");
+  param.find(".paramPlot").hide();
+}
+
 // TODO factor 0-D, 1-D, and 2-D param UI elements into one div?
 function param0D(event)
 {
   var param = $(event.target).closest(".parameter");
-  var paramName = param.find(".paramName").text();
-  var paramID = plasmaParameterNames.indexOf(paramName);
+  paramBoxReset(param);
+
   param.find(".paramDataValue").show();
-  param.find(".format1D").hide();
-  param.find(".format2D").hide();
-  param.find(".paramDataFile").hide();
-  param.find(".paramPlot").hide();
-  cppmain.clear_parameter(paramID);
 }
 function param1D(event)
 {
   var param = $(event.target).closest(".parameter");
-  var paramName = param.find(".paramName").text();
-  var paramID = plasmaParameterNames.indexOf(paramName);
-  param.find(".paramDataValue").hide();
+  paramBoxReset(param);
+
   param.find(".format1D").show();
-  param.find(".format2D").hide();
   param.find(".paramDataFile").show();
-  // TODO the string "No file selected" is used multiple times. factor?
-  param.find(".paramFilename").text("No file selected");
   param.find(".paramPlot").show();
-  cppmain.clear_parameter(paramID);
 }
 function param2D(event)
 {
   var param = $(event.target).closest(".parameter");
-  var paramName = param.find(".paramName").text();
-  var paramID = plasmaParameterNames.indexOf(paramName);
-  param.find(".paramDataValue").hide();
-  param.find(".format1D").hide();
+  paramBoxReset(param);
+
   param.find(".format2D").show();
   param.find(".paramDataFile").show();
-  param.find(".paramFilename").text("No file selected");
   param.find(".paramPlot").show();
-  cppmain.clear_parameter(paramID);
 }
 
 function loadFormats()

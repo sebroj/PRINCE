@@ -54,12 +54,12 @@ static bool func_verify_args(
 
 static void clear_parameter(const FunctionCallbackInfo<Value>& args)
 {
-  std::vector<ArgTypes> argTypes({ARG_INT});
+  std::vector<ArgTypes> argTypes({ARG_STR});
   if (!func_verify_args("clear_parameter", args, argTypes))
     return;
 
-  int paramID = args[0]->Int32Value();
-  clear_data(paramID);
+  StringV8 alias(args[0]);
+  clear_data(alias.cstr());
 }
 
 static void load_file(const FunctionCallbackInfo<Value>& args)
@@ -101,20 +101,20 @@ static void load_file(const FunctionCallbackInfo<Value>& args)
 
 static void get_param_data(const FunctionCallbackInfo<Value>& args)
 {
-  std::vector<ArgTypes> argTypes({ARG_INT});
+  std::vector<ArgTypes> argTypes({ARG_STR});
   if (!func_verify_args("get_param_data", args, argTypes))
     return;
 
-  int paramID = args[0]->Int32Value();
+  StringV8 alias(args[0]);
 
   Isolate* isolate = args.GetIsolate();
-  const std::vector<double>* valuesPtr = get_values(paramID);
+  const std::vector<double>* valuesPtr = get_values(alias.cstr());
   if (valuesPtr == nullptr)
   {
     args.GetReturnValue().Set(v8::Null(isolate));
     return;
   }
-  const std::vector<std::vector<double>>& points = *get_points(paramID);
+  const std::vector<std::vector<double>>& points = *get_points(alias.cstr());
   const std::vector<double>& values = *valuesPtr;
   if (points[0].size() != 1)
   {

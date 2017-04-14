@@ -11,8 +11,10 @@ let dispersionRelations = [];
 // Load native C++ module.
 const cppmain = require("../cpp/build/Release/main");
 
+// External libraries
 const d3 = require("d3");
 
+// Chrome-style tabs global variable
 let chromeTabs = null;
 
 function parameterFromName(name)
@@ -75,13 +77,19 @@ function paramPlot(event)
   var paramInfo = parameterFromName(paramName);
 
   // Try to get the data
-  data = cppmain.get_param_data(paramInfo["alias"]);
-  if (data == null) {
+  paramData = cppmain.get_param_data(paramInfo["alias"]);
+  if (paramData == null) {
     // TODO handle user errors globally
-    console.log("ERROR (USR): No data found!");
+    console.log("ERROR (USR): No parameter data found!");
+    return;
+  }
+  if (paramData["dim"] != 1)
+  {
+    console.log("2D plotting not supported yet.");
     return;
   }
   dataPairs = [];
+  data = paramData["data"];
   for (let i = 0; i < data.length / 2; i++) {
     dataPairs.push([data[i], data[i + data.length / 2]]);
   }

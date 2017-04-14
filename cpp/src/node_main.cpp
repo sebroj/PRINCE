@@ -107,6 +107,7 @@ static void get_param_data(const FunctionCallbackInfo<Value>& args)
 
   StringV8 alias(args[0]);
 
+  // Attempt to retrieve the data.
   Isolate* isolate = args.GetIsolate();
   const std::vector<double>* valuesPtr = get_values(alias.cstr());
   if (valuesPtr == nullptr)
@@ -116,12 +117,14 @@ static void get_param_data(const FunctionCallbackInfo<Value>& args)
   }
   const std::vector<std::vector<double>>& points = *get_points(alias.cstr());
   const std::vector<double>& values = *valuesPtr;
-  if (points[0].size() != 1)
-  {
-    args.GetReturnValue().Set(v8::Null(isolate));
-    return;
-  }
+  int dataDim = (int)points[0].size();
 
+  Local<Object> result = v8::Object::New(isolate);
+
+  Local<String> dimString = v8::String::NewFromUtf8(isolate, "dim");
+  result->Set(dimString, v8::Number::New(isolate, dataDim));
+
+  // Transfer the data to the V8 runtime.
   Local<v8::Array> data = v8::Array::New(isolate, (int)points.size() * 2);
   for (int i = 0; i < (int)points.size(); i++)
   {
@@ -134,7 +137,9 @@ static void get_param_data(const FunctionCallbackInfo<Value>& args)
     data->Set((int)points.size() + i, test);
   }
 
-  args.GetReturnValue().Set(data);
+  Local<String> dataString = v8::String::NewFromUtf8(isolate, "data");
+  result->Set(dataString, data);
+  args.GetReturnValue().Set(result);
 }
 
 static void setup_parameters(const FunctionCallbackInfo<Value>& args)

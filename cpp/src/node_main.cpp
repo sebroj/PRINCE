@@ -124,21 +124,51 @@ static void get_param_data(const FunctionCallbackInfo<Value>& args)
   Local<String> dimString = v8::String::NewFromUtf8(isolate, "dim");
   result->Set(dimString, v8::Number::New(isolate, dataDim));
 
-  // Transfer the data to the V8 runtime.
-  Local<v8::Array> data = v8::Array::New(isolate, (int)points.size() * 2);
-  for (int i = 0; i < (int)points.size(); i++)
+  if (dataDim == 1)
   {
-    Local<v8::Number> test = v8::Number::New(isolate, points[i][0]);
-    data->Set(i, test);
+    // Transfer 1-D data to the V8 runtime.
+    Local<v8::Array> data = v8::Array::New(isolate, (int)points.size() * 2);
+    for (int i = 0; i < (int)points.size(); i++)
+    {
+      Local<v8::Number> val = v8::Number::New(isolate, points[i][0]);
+      data->Set(i, val);
+    }
+    for (int i = 0; i < (int)values.size(); i++)
+    {
+      Local<v8::Number> val = v8::Number::New(isolate, values[i]);
+      data->Set((int)points.size() + i, val);
+    }
+
+    Local<String> dataString = v8::String::NewFromUtf8(isolate, "data");
+    result->Set(dataString, data);
   }
-  for (int i = 0; i < (int)values.size(); i++)
+  if (dataDim == 2)
   {
-    Local<v8::Number> test = v8::Number::New(isolate, values[i]);
-    data->Set((int)points.size() + i, test);
+    int height = 0;
+    double firstX = points[0][0];
+    while (points[++height][0] == firstX) {}
+    int width = (int)values.size() / height;
+    Local<String> widthString = v8::String::NewFromUtf8(isolate, "width");
+    result->Set(widthString, v8::Number::New(isolate, width));
+    Local<String> heightString = v8::String::NewFromUtf8(isolate, "height");
+    result->Set(heightString, v8::Number::New(isolate, height));
+    // Transfer 2-D data to the V8 runtime.
+    std::vector<double> valuesRegular;
+    to_regular_grid(points, values, valuesRegular);
+    Local<v8::Array> data = v8::Array::New(isolate, (int)valuesRegular.size());
+    for (int i = 0; i < (int)valuesRegular.size(); i++)
+    {
+      Local<v8::Number> val = v8::Number::New(isolate, values[i]);
+      // Change index from column-grouping to row-grouping.
+      int row = i % height;
+      int col = i / height;
+      data->Set(row * width + col, val);
+    }
+
+    Local<String> dataString = v8::String::NewFromUtf8(isolate, "data");
+    result->Set(dataString, data);
   }
 
-  Local<String> dataString = v8::String::NewFromUtf8(isolate, "data");
-  result->Set(dataString, data);
   args.GetReturnValue().Set(result);
 }
 

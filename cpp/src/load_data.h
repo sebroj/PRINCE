@@ -19,3 +19,8 @@ bool load_data(
   int dim, CoordType coordTypes[2]);
 const std::vector<std::vector<double>>* get_points(const char* alias);
 const std::vector<double>* get_values(const char* alias);
+
+void to_regular_grid(
+  const std::vector<std::vector<double>>& points,
+  const std::vector<double>& values,
+  std::vector<double>& out_values);

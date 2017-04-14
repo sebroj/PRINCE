@@ -389,3 +389,14 @@ const std::vector<double>* get_values(const char* alias)
 
   return rawParams[alias].get_values();
 }
+
+void to_regular_grid(
+  const std::vector<std::vector<double>>& points,
+  const std::vector<double>& values,
+  std::vector<double>& out_values)
+{
+  for (double value : values)
+  {
+    out_values.push_back(value);
+  }
+}

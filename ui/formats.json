@@ -69,5 +69,117 @@
       "name": "Electrostatic ion cyclotron wave, forward branch",
       "req": [ "ne", "Te", "Bz" ]
     }
+  ],
+  "Constants": [
+    {
+      "name": "Pi",
+      "symbol": "\\pi",
+      "alias": "pi",
+      "value": 3.1415926
+    },
+    {
+      "name": "Fundamental charge",
+      "symbol": "e",
+      "alias": "e",
+      "value": 1.6e-19
+    },
+    {
+      "name": "Electron mass",
+      "symbol": "m_\\text{e}",
+      "alias": "me",
+      "value": 9.11e-31
+    },
+    {
+      "name": "Ion mass",
+      "symbol": "m_\\text{i}",
+      "alias": "mi",
+      "value": 0.0
+    },
+    {
+      "name": "Vacuum permittivity",
+      "symbol": "\\varepsilon_0",
+      "alias": "eps0",
+      "value": 8.85e-12
+    },
+    {
+      "name": "Vacuum permeability",
+      "symbol": "\\mu_0",
+      "alias": "mu0",
+      "value": 0.0
+    },
+    {
+      "name": "Speed of light",
+      "symbol": "c",
+      "alias": "c",
+      "value": 299792458
+    },
+    {
+      "name": "Boltzmann constant",
+      "symbol": "k_B",
+      "alias": "kb",
+      "value": 1.38e-23
+    }
+  ],
+  "CalculatedParameters": [
+    {
+      "name": "Electron Plasma Frequency",
+      "symbol": "\\omega_{p, \\text{e}}",
+      "alias": "wpe",
+      "formula": ""
+    },
+    {
+      "name": "Ion Plasma Frequency",
+      "symbol": "\\omega_{p,\\text{i}}",
+      "alias": "wpi",
+      "formula": ""
+    },
+    {
+      "name": "Electron Debye Length",
+      "symbol": "\\lambda_{D,\\text{e}}",
+      "alias": "lambdaDe",
+      "formula": ""
+    },
+    {
+      "name": "Ion Debye Length",
+      "symbol": "\\lambda_{D,\\text{i}}",
+      "alias": "lambdaDi",
+      "formula": ""
+    },
+    {
+      "name": "Electron Thermal Velocity",
+      "symbol": "v_{T,\\text{e}}",
+      "alias": "vTe",
+      "formula": ""
+    },
+    {
+      "name": "Ion Thermal Velocity",
+      "symbol": "v_{T,\\text{i}}",
+      "alias": "vTi",
+      "formula": ""
+    },
+    {
+      "name": "Ion Sound Speed",
+      "symbol": "c_S",
+      "alias": "cS",
+      "formula": ""
+    },
+    {
+      "name": "Electron Cyclotron Frequency",
+      "symbol": "\\omega_{c,\\text{e}}",
+      "alias": "wce",
+      "formula": ""
+    },
+    {
+      "name": "Ion Cyclotron Frequency",
+      "symbol": "\\omega_{c,\\text{i}}",
+      "alias": "wci",
+      "formula": ""
+    },
+    {
+      "name": "Alfv\\'en Velocity",
+      "symbol": "\\nicefrac{B}{\\sqrt{\\mu_0n_\\text{e}m_\\text{i}}}",
+      "alias": "vA",
+      "formula": ""
+    }
   ]
 }

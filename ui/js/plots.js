@@ -1,3 +1,5 @@
+const d3 = require("d3");
+
 function paramPlot(event)
 {
   var parameter = $(event.target).closest(".parameter");

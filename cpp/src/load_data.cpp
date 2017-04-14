@@ -8,6 +8,14 @@
 #include <array>
 
 #include "node_main.h"
+//#include "extern/exprtk.h"
+
+// TODO all user errors have been labeled as "ERROR (USR): message"
+// centralize this logging system. Messages will be improved in future revision.
+
+class Parameter
+{
+};
 
 class ParameterRaw
 {
@@ -44,12 +52,196 @@ public:
   }
 };
 
-//std::vector<ParameterRaw> rawParams;
 std::map<std::string, ParameterRaw> rawParams;
 
-// TODO all user errors have been labeled as "ERROR (USR): message"
-// centralize this logging system. Messages will be improved in future revision.
+// Trim leading and trailing whitespace from str IN PLACE.
+// Return a null-terminated substring of str with trimmed whitespace.
+static char* trim_whitespace(char* str)
+{
+  // Leading whitespace
+  while (isspace(*str))
+    str++;
 
+  // All spaces
+  if (*str == '\0')
+    return str;
+
+  // Trailing whitespace
+  char* end = str + strlen(str) - 1;
+  while (end > str && isspace(*end))
+    end--;
+  *(end + 1) = 0;
+
+  return str;
+}
+
+// Read null-terminated string line as a list of comma-separated doubles.
+// Return a vector of the read doubles.
+static std::vector<double> read_line_doubles(char* line)
+{
+  std::vector<double> data;
+
+  char* start = line;
+  char* delim = line;
+  bool nullChar = false;
+  while (!nullChar)
+  {
+    while (*delim != ',' && *delim != '\0')
+      delim++;
+
+    if (*delim == '\0')
+      nullChar = true;
+    *delim = '\0';
+
+    start = trim_whitespace(start);
+    char* endptr = start;
+    double value = strtod(start, &endptr);
+    if (endptr == start || *endptr != '\0')
+    {
+      printf("    LINE ERROR (USR): Malformed number \"%s\"\n", start);
+      return std::vector<double>();
+    }
+
+    data.push_back(value);
+    start = ++delim;
+  }
+
+  return data;
+}
+
+static bool compare_data(
+  const std::vector<double>& d1,
+  const std::vector<double>& d2)
+{
+  if (d1[0] == d2[0] && d1.size() > 2)
+    return d1[1] <= d2[1];
+  return d1[0] < d2[0];
+}
+
+void clear_data(const char* alias)
+{
+  printf("DBG: parameter: %s\n", alias);
+  printf("     data cleared\n");
+
+  ParameterRaw paramRaw;
+  rawParams[alias] = paramRaw;
+}
+
+bool load_data(
+  const char* path, const char* alias,
+  int dim, CoordType coordTypes[2])
+{
+  const int BUF_SIZE = 256;
+
+  /*typedef exprtk::symbol_table<double> symbol_table_t;
+  typedef exprtk::expression<double>   expression_t;
+  typedef exprtk::parser<double>       parser_t;
+
+  std::string expression_string = "clamp(-1.0,sin(2 * pi * x) + cos(x / 2 * pi),+1.0)";
+  double x;
+
+  symbol_table_t symbol_table;
+  symbol_table.add_variable("x", x);
+  symbol_table.add_constants();
+
+  expression_t expression;
+  expression.register_symbol_table(symbol_table);
+
+  parser_t parser;
+  parser.compile(expression_string,expression);
+
+  for (x = double(-5); x <= double(+5); x += double(0.001))
+  {
+    double y = expression.value();
+    printf("%19.15f\t%19.15f\n",x,y);
+  }*/
+
+  printf("DBG: parameter: %s\n", alias);
+  printf("     dimension: %d-D\n", dim);
+  printf("     coords:    %d, %d\n", coordTypes[0], coordTypes[1]);
+  printf("     filepath:  %s\n", path);
+  FILE* fp = fopen(path, "r");
+  if (fp == NULL)
+    return false;
+
+  // Read raw data line by line.
+  std::vector<std::vector<double>> data;
+  char buf[BUF_SIZE];
+  int lineNumber = 1;
+  while (fgets(buf, BUF_SIZE, fp))
+  {
+    char* trimmed = trim_whitespace(buf);
+    std::vector<double> lineData = read_line_doubles(trimmed);
+    if (lineData.empty())
+    {
+      printf("ERROR (USR): unable to read line %d\n", lineNumber);
+      return false;
+    }
+    if ((int)lineData.size() != dim + 1)
+    {
+      printf("    LINE ERROR (USR): Read %d values, expected %d.\n",
+        (int)lineData.size(), dim + 1);
+      printf("ERROR (USR): unable to read line %d\n", lineNumber);
+      return false;
+    }
+
+    data.push_back(lineData);
+    lineNumber++;
+  }
+
+  // Sort data in the ascending order given by compare_data.
+  std::sort(std::begin(data), std::end(data), compare_data);
+
+  // TODO check if data points are complete (for 2D grid)
+  // example implementation: for every data point, reverse (x, y) coords,
+  // insert these to new list, sort this list, then check if newList == dataPts
+
+  // Separate data into points and values.
+  std::vector<std::vector<double>> points;
+  std::vector<double> values;
+  for (const std::vector<double>& d : data)
+  {
+    std::vector<double> point;
+    for (int i = 0; i < dim; i++)
+      point.push_back(d[i]);
+
+    points.push_back(point);
+    values.push_back(d[dim]);
+  }
+
+  ParameterRaw parameterRaw(coordTypes, points, values);
+  rawParams[alias] = parameterRaw;
+
+  return true;
+}
+
+const std::vector<std::vector<double>>* get_points(const char* alias)
+{
+  if (!rawParams[alias].is_set())
+    return nullptr;
+
+  return rawParams[alias].get_points();
+}
+const std::vector<double>* get_values(const char* alias)
+{
+  if (!rawParams[alias].is_set())
+    return nullptr;
+
+  return rawParams[alias].get_values();
+}
+
+void to_regular_grid(
+  const std::vector<std::vector<double>>& points,
+  const std::vector<double>& values,
+  std::vector<double>& out_values)
+{
+  for (double value : values)
+  {
+    out_values.push_back(value);
+  }
+}
+
+#if 0
 class DataPoints
 {
   CoordType coordTypes[2] = { COORD_NONE, COORD_NONE };
@@ -207,196 +399,4 @@ public:
     return -1;
   }
 };
-
-class DataValues
-{
-  std::vector<std::vector<double>> values;
-
-public:
-  void set_values(int id, const std::vector<double>& values)
-  {
-    this->values[id] = std::vector<double>(values);
-  }
-
-  void set_count(int count)
-  {
-    values.resize(count);
-  }
-};
-
-// Trim leading and trailing whitespace from str IN PLACE.
-// Return a null-terminated substring of str with trimmed whitespace.
-static char* trim_whitespace(char* str)
-{
-  // Leading whitespace
-  while (isspace(*str))
-    str++;
-
-  // All spaces
-  if (*str == '\0')
-    return str;
-
-  // Trailing whitespace
-  char* end = str + strlen(str) - 1;
-  while (end > str && isspace(*end))
-    end--;
-  *(end + 1) = 0;
-
-  return str;
-}
-
-// Read null-terminated string line as a list of comma-separated doubles.
-// Return a vector of the read doubles.
-static std::vector<double> read_line_doubles(char* line)
-{
-  std::vector<double> data;
-
-  char* start = line;
-  char* delim = line;
-  bool nullChar = false;
-  while (!nullChar)
-  {
-    while (*delim != ',' && *delim != '\0')
-      delim++;
-
-    if (*delim == '\0')
-      nullChar = true;
-    *delim = '\0';
-
-    start = trim_whitespace(start);
-    char* endptr = start;
-    double value = strtod(start, &endptr);
-    if (endptr == start || *endptr != '\0')
-    {
-      printf("    LINE ERROR (USR): Malformed number \"%s\"\n", start);
-      return std::vector<double>();
-    }
-
-    data.push_back(value);
-    start = ++delim;
-  }
-
-  return data;
-}
-
-static bool compare_data(
-  const std::vector<double>& d1,
-  const std::vector<double>& d2)
-{
-  if (d1[0] == d2[0] && d1.size() > 2)
-    return d1[1] <= d2[1];
-  return d1[0] < d2[0];
-}
-
-void clear_data(const char* alias)
-{
-  printf("DBG: parameter: %s\n", alias);
-  printf("     data cleared\n");
-
-  ParameterRaw paramRaw;
-  rawParams[alias] = paramRaw;
-}
-
-bool load_data(
-  const char* path, const char* alias,
-  int dim, CoordType coordTypes[2])
-{
-  const int BUF_SIZE = 256;
-
-  printf("DBG: parameter: %s\n", alias);
-  printf("     dimension: %d-D\n", dim);
-  printf("     coords:    %d, %d\n", coordTypes[0], coordTypes[1]);
-  printf("     filepath:  %s\n", path);
-  FILE* fp = fopen(path, "r");
-  if (fp == NULL)
-    return false;
-
-  // Read raw data line by line.
-  std::vector<std::vector<double>> data;
-  char buf[BUF_SIZE];
-  int lineNumber = 1;
-  while (fgets(buf, BUF_SIZE, fp))
-  {
-    char* trimmed = trim_whitespace(buf);
-    std::vector<double> lineData = read_line_doubles(trimmed);
-    if (lineData.empty())
-    {
-      printf("ERROR (USR): unable to read line %d\n", lineNumber);
-      return false;
-    }
-    if ((int)lineData.size() != dim + 1)
-    {
-      printf("    LINE ERROR (USR): Read %d values, expected %d.\n",
-        (int)lineData.size(), dim + 1);
-      printf("ERROR (USR): unable to read line %d\n", lineNumber);
-      return false;
-    }
-
-    data.push_back(lineData);
-    lineNumber++;
-  }
-
-  // Sort data in the ascending order given by compare_data.
-  std::sort(std::begin(data), std::end(data), compare_data);
-
-  // TODO check if data points are complete (for 2D grid)
-  // example implementation: for every data point, reverse (x, y) coords,
-  // insert these to new list, sort this list, then check if newList == dataPts
-
-  // Separate data into points and values.
-  std::vector<std::vector<double>> points;
-  std::vector<double> values;
-  for (const std::vector<double>& d : data)
-  {
-    std::vector<double> point;
-    for (int i = 0; i < dim; i++)
-      point.push_back(d[i]);
-
-    points.push_back(point);
-    values.push_back(d[dim]);
-  }
-
-  ParameterRaw parameterRaw(coordTypes, points, values);
-  // TODO use alias
-  rawParams[alias] = parameterRaw;
-  //if (!dataPoints.new_points(points, coordTypes))
-  //  return false;
-
-  //dataValues.set_values(paramID, values);
-
-  return true;
-}
-
-bool set_parameter_count(int count)
-{
-  //dataValues.set_count(count);
-  //rawParams.resize(count);
-  // TODO remove this?
-  return true;
-}
-
-const std::vector<std::vector<double>>* get_points(const char* alias)
-{
-  if (!rawParams[alias].is_set())
-    return nullptr;
-
-  return rawParams[alias].get_points();
-}
-const std::vector<double>* get_values(const char* alias)
-{
-  if (!rawParams[alias].is_set())
-    return nullptr;
-
-  return rawParams[alias].get_values();
-}
-
-void to_regular_grid(
-  const std::vector<std::vector<double>>& points,
-  const std::vector<double>& values,
-  std::vector<double>& out_values)
-{
-  for (double value : values)
-  {
-    out_values.push_back(value);
-  }
-}
+#endif

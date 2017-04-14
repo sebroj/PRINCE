@@ -125,61 +125,71 @@
       "name": "Electron Plasma Frequency",
       "symbol": "\\omega_{p, \\text{e}}",
       "alias": "wpe",
-      "formula": ""
+      "formula": "\\sqrt{\\nicefrac{e^2n_\\text{e}}{\\epsilon_0m_\\text{e}}}",
+      "expr": "sqrt((e^2 * ne) / (eps0 * me))"
     },
     {
       "name": "Ion Plasma Frequency",
       "symbol": "\\omega_{p,\\text{i}}",
       "alias": "wpi",
-      "formula": ""
+      "formula": "\\sqrt{\\nicefrac{e^2n_\\text{e}}{\\epsilon_0m_\\text{i}}}",
+      "expr": "sqrt((e^2 * ne) / (eps0 * mi))"
     },
     {
       "name": "Electron Debye Length",
       "symbol": "\\lambda_{D,\\text{e}}",
       "alias": "lambdaDe",
-      "formula": ""
+      "formula": "\\sqrt{\\nicefrac{T_\\text{e}\\epsilon_0}{e^2n_\\text{e}}}",
+      "expr": "sqrt((Te * eps0) / (e^2 * ne))"
     },
     {
       "name": "Ion Debye Length",
       "symbol": "\\lambda_{D,\\text{i}}",
       "alias": "lambdaDi",
-      "formula": ""
+      "formula": "\\sqrt{\\nicefrac{T_\\text{i}\\epsilon_0}{e^2n_\\text{e}}}",
+      "expr": "sqrt((Ti * eps0) / (e^2 * ne))"
     },
     {
       "name": "Electron Thermal Velocity",
       "symbol": "v_{T,\\text{e}}",
       "alias": "vTe",
-      "formula": ""
+      "formula": "\\sqrt{\\nicefrac{T_\\text{e}}{m_\\text{e}}}",
+      "expr": "sqrt(Te / me)"
     },
     {
       "name": "Ion Thermal Velocity",
       "symbol": "v_{T,\\text{i}}",
       "alias": "vTi",
-      "formula": ""
+      "formula": "\\sqrt{\\nicefrac{T_\\text{i}}{m_\\text{i}}}",
+      "expr": "sqrt(Ti / mi)"
     },
     {
       "name": "Ion Sound Speed",
       "symbol": "c_S",
       "alias": "cS",
-      "formula": ""
+      "formula": "\\sqrt{\\nicefrac{(T_\\text{e}+3T_\\text{i})}{m_\\text{e}}}",
+      "expr": "sqrt((Te + 3 * Ti) / me)"
     },
     {
       "name": "Electron Cyclotron Frequency",
       "symbol": "\\omega_{c,\\text{e}}",
       "alias": "wce",
-      "formula": ""
+      "formula": "\\nicefrac{eB}{m_\\text{e}}",
+      "expr": ""
     },
     {
       "name": "Ion Cyclotron Frequency",
       "symbol": "\\omega_{c,\\text{i}}",
       "alias": "wci",
-      "formula": ""
+      "formula": "\\nicefrac{eB}{m_\\text{i}}",
+      "expr": ""
     },
     {
       "name": "Alfv\\'en Velocity",
       "symbol": "\\nicefrac{B}{\\sqrt{\\mu_0n_\\text{e}m_\\text{i}}}",
       "alias": "vA",
-      "formula": ""
+      "formula": "\\nicefrac{B}{\\sqrt{\\mu_0n_\\text{e}m_\\text{i}}}",
+      "expr": ""
     }
   ]
 }

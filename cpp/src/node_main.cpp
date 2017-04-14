@@ -7,37 +7,35 @@
 
 #include "node_main.h"
 
-// TODO port to nan for compatibility and robustness.
-//#include <nan.h>
-#include <node.h>
+#include <nan.h>
 
-#include <cstdio>
-#include <stdarg.h>
 #include <vector>
 
 #include "load_data.h"
 
-using v8::Exception;
-using v8::FunctionCallbackInfo;
-using v8::Isolate;
-using v8::Local;
-using v8::Object;
-using v8::String;
-using v8::Value;
+using namespace Nan;
 
-enum ArgTypes
+enum ValueTypes
 {
-  ARG_INT,
-  ARG_STR,
-  ARG_ARRAY
+  VALUE_INT,
+  VALUE_STR,
+  VALUE_ARRAY
 };
 
-class StringV8
+static bool verify_cb_info(
+  const char* funcName,
+  const FunctionCallbackInfo<v8::Value>& cbInfo,
+  const std::vector<ValueTypes>& valueTypes);
+static bool verify_array(
+  const v8::Local<v8::Array>& array,
+  const std::vector<ValueTypes>& valueTypes);
+
+class StringConv
 {
-  String::Utf8Value str;
+  const Utf8String str;
 
 public:
-  StringV8(const Local<Value>& value)
+  StringConv(const v8::Local<v8::Value>& value)
     : str(value)
   {}
 
@@ -47,42 +45,35 @@ public:
   }
 };
 
-static bool func_verify_args(
-  const char* funcName,
-  const FunctionCallbackInfo<Value>& args,
-  const std::vector<ArgTypes>& argTypes);
-
-static void clear_parameter(const FunctionCallbackInfo<Value>& args)
+NAN_METHOD(clear_parameter)
 {
-  std::vector<ArgTypes> argTypes({ARG_STR});
-  if (!func_verify_args("clear_parameter", args, argTypes))
+  const FunctionCallbackInfo<v8::Value> &cbInfo = info;
+  std::vector<ValueTypes> cbInfoTypes({ VALUE_STR });
+  if (!verify_cb_info("clear_parameter", cbInfo, cbInfoTypes))
     return;
 
-  StringV8 alias(args[0]);
+  StringConv alias(cbInfo[0]);
   clear_data(alias.cstr());
 }
 
-static void load_file(const FunctionCallbackInfo<Value>& args)
+NAN_METHOD(load_file)
 {
-  std::vector<ArgTypes> argTypes({ARG_STR, ARG_STR, ARG_INT, ARG_ARRAY});
-  if (!func_verify_args("load_file", args, argTypes))
+  const FunctionCallbackInfo<v8::Value> &cbInfo = info;
+  std::vector<ValueTypes> cbInfoTypes(
+    { VALUE_STR, VALUE_STR, VALUE_INT, VALUE_ARRAY });
+  if (!verify_cb_info("load_file", cbInfo, cbInfoTypes))
     return;
 
   // Verify array argument
-  Local<v8::Array> array = Local<v8::Array>::Cast(args[3]);
-  if (array->Length() != 2)
+  v8::Local<v8::Array> array = cbInfo[3].As<v8::Array>();
+  std::vector<ValueTypes> arrayTypes({ VALUE_INT, VALUE_INT });
+  if (!verify_array(array, arrayTypes))
   {
-    DEBUG_error("load_file coordTypes array length is %d, but should be 2",
-      array->Length());
+    DEBUG_error("load_file coordTypes array is misformatted.");
     return;
   }
-  if (!array->Get(0)->IsInt32() || !array->Get(1)->IsInt32())
-  {
-    DEBUG_error("load_file coordTypes array elements should be integers");
-    return;
-  }
-  int a0 = array->Get(0)->Int32Value();
-  int a1 = array->Get(1)->Int32Value();
+  int a0 = Nan::To<int>(Nan::Get(array, 0).ToLocalChecked()).FromJust();
+  int a1 = Nan::To<int>(Nan::Get(array, 1).ToLocalChecked()).FromJust();
   if (a0 < COORD_NONE || a0 > COORD_Z || a1 < COORD_NONE || a1 > COORD_Z)
   {
     DEBUG_error("load_file coordTypes array elements should be CoordType values");
@@ -90,57 +81,50 @@ static void load_file(const FunctionCallbackInfo<Value>& args)
   }
 
   // Translate arguments for load procedure.
-  StringV8 filePath(args[0]);
-  StringV8 alias(args[1]);
-  int dataDim = args[2]->Int32Value();
+  StringConv filePath(cbInfo[0]);
+  StringConv alias(cbInfo[1]);
+  int dataDim = Nan::To<int>(cbInfo[2]).FromJust();
   CoordType coordTypes[2] = { (CoordType)a0, (CoordType)a1 };
 
   bool success = load_data(filePath.cstr(), alias.cstr(), dataDim, coordTypes);
-  args.GetReturnValue().Set(success);
+  cbInfo.GetReturnValue().Set(success);
 }
 
-static void get_param_data(const FunctionCallbackInfo<Value>& args)
+NAN_METHOD(get_param_data)
 {
-  std::vector<ArgTypes> argTypes({ARG_STR});
-  if (!func_verify_args("get_param_data", args, argTypes))
+  const FunctionCallbackInfo<v8::Value> &cbInfo = info;
+  std::vector<ValueTypes> cbInfoTypes({ VALUE_STR });
+  if (!verify_cb_info("get_param_data", cbInfo, cbInfoTypes))
     return;
 
-  StringV8 alias(args[0]);
+  StringConv alias(cbInfo[0]);
 
   // Attempt to retrieve the data.
-  Isolate* isolate = args.GetIsolate();
   const std::vector<double>* valuesPtr = get_values(alias.cstr());
   if (valuesPtr == nullptr)
   {
-    args.GetReturnValue().Set(v8::Null(isolate));
+    cbInfo.GetReturnValue().Set(Null());
     return;
   }
   const std::vector<std::vector<double>>& points = *get_points(alias.cstr());
   const std::vector<double>& values = *valuesPtr;
   int dataDim = (int)points[0].size();
 
-  Local<Object> result = v8::Object::New(isolate);
+  v8::Local<v8::Object> result = New<v8::Object>();
 
-  Local<String> dimString = v8::String::NewFromUtf8(isolate, "dim");
-  result->Set(dimString, v8::Number::New(isolate, dataDim));
+  Set(result, New<v8::String>("dim").ToLocalChecked(), New<v8::Int32>(dataDim));
 
   if (dataDim == 1)
   {
     // Transfer 1-D data to the V8 runtime.
-    Local<v8::Array> data = v8::Array::New(isolate, (int)points.size() * 2);
+    v8::Local<v8::Array> data = New<v8::Array>();
     for (int i = 0; i < (int)points.size(); i++)
-    {
-      Local<v8::Number> val = v8::Number::New(isolate, points[i][0]);
-      data->Set(i, val);
-    }
-    for (int i = 0; i < (int)values.size(); i++)
-    {
-      Local<v8::Number> val = v8::Number::New(isolate, values[i]);
-      data->Set((int)points.size() + i, val);
-    }
+      Set(data, i, New<v8::Number>(points[i][0]));
 
-    Local<String> dataString = v8::String::NewFromUtf8(isolate, "data");
-    result->Set(dataString, data);
+    for (int i = 0; i < (int)values.size(); i++)
+      Set(data, (int)points.size() + i, New<v8::Number>(values[i]));
+
+    Set(result, New<v8::String>("data").ToLocalChecked(), data);
   }
   if (dataDim == 2)
   {
@@ -148,99 +132,60 @@ static void get_param_data(const FunctionCallbackInfo<Value>& args)
     double firstX = points[0][0];
     while (points[++height][0] == firstX) {}
     int width = (int)values.size() / height;
-    Local<String> widthString = v8::String::NewFromUtf8(isolate, "width");
-    result->Set(widthString, v8::Number::New(isolate, width));
-    Local<String> heightString = v8::String::NewFromUtf8(isolate, "height");
-    result->Set(heightString, v8::Number::New(isolate, height));
-    // Transfer 2-D data to the V8 runtime.
+    Set(result, New<v8::String>("width").ToLocalChecked(),
+      New<v8::Int32>(width));
+    Set(result, New<v8::String>("height").ToLocalChecked(),
+      New<v8::Int32>(height));
+
     std::vector<double> valuesRegular;
     to_regular_grid(points, values, valuesRegular);
-    Local<v8::Array> data = v8::Array::New(isolate, (int)valuesRegular.size());
+    v8::Local<v8::Array> data = New<v8::Array>();
     for (int i = 0; i < (int)valuesRegular.size(); i++)
     {
-      Local<v8::Number> val = v8::Number::New(isolate, values[i]);
       // Change index from column-grouping to row-grouping.
       int row = i % height;
       int col = i / height;
-      data->Set(row * width + col, val);
+      Set(data, row * width + col, New<v8::Number>(values[i]));
     }
 
-    Local<String> dataString = v8::String::NewFromUtf8(isolate, "data");
-    result->Set(dataString, data);
+    Set(result, New<v8::String>("data").ToLocalChecked(), data);
   }
 
-  args.GetReturnValue().Set(result);
+  cbInfo.GetReturnValue().Set(result);
 }
 
-static void setup_parameters(const FunctionCallbackInfo<Value>& args)
-{
-  std::vector<ArgTypes> argTypes({ARG_INT});
-  if (!func_verify_args("setup_parameters", args, argTypes))
-    return;
-
-  // TODO possibly pass parameter names? or at least symbols for equations...
-
-  int paramCount = args[0]->Int32Value();
-  set_parameter_count(paramCount);
-}
-
-void DEBUG_error(const char* format, ...)
-{
-  const int MSG_MAX_LENGTH = 1024;
-  const char* MSG_PREFIX = "ERROR (DBG): ";
-  Isolate* isolate = Isolate::GetCurrent();
-  char msg[MSG_MAX_LENGTH];
-
-  int cx = snprintf(msg, MSG_MAX_LENGTH, "%s", MSG_PREFIX);
-  if (cx < 0)
-    isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate,
-      "ERROR (DBG): received error, failed to parse message (oh the irony)")));
-
-  va_list args;
-  va_start(args, format);
-  int cx2 = vsnprintf(msg + cx, MSG_MAX_LENGTH - cx, format, args);
-  va_end(args);
-  if (cx2 < 0)
-    isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate,
-      "ERROR (DBG): received error, failed to parse message (oh the irony)")));
-
-  if ((cx + cx2) >= MSG_MAX_LENGTH)
-    printf("WARNING (DBG): error message too long, truncated\n");
-
-  isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, msg)));
-}
-
-static bool func_verify_args(
+static bool verify_cb_info(
   const char* funcName,
-  const FunctionCallbackInfo<Value>& args,
-  const std::vector<ArgTypes>& argTypes)
+  const FunctionCallbackInfo<v8::Value>& cbInfo,
+  const std::vector<ValueTypes>& valueTypes)
 {
-  if (args.Length() != (int)argTypes.size())
+  if (cbInfo.Length() != (int)valueTypes.size())
   {
-    DEBUG_error("%s expected %d arguments", funcName, (int)argTypes.size());
+    DEBUG_error("%s expected %d arguments", funcName, (int)valueTypes.size());
     return false;
   }
-  for (int i = 0; i < args.Length(); i++)
+  // TODO this possibly still uses non-NAN stuff.
+  for (int i = 0; i < cbInfo.Length(); i++)
   {
-    if (argTypes[i] == ARG_INT)
+    if (valueTypes[i] == VALUE_INT)
     {
-      if (!args[i]->IsInt32())
+      if (!cbInfo[i]->IsInt32())
       {
         DEBUG_error("%s arg %d should be an int", funcName, i+1);
         return false;
       }
     }
-    else if (argTypes[i] == ARG_STR)
+    else if (valueTypes[i] == VALUE_STR)
     {
-      if (!args[i]->IsString())
+      if (!cbInfo[i]->IsString())
       {
         DEBUG_error("%s arg %d should be a string", funcName, i+1);
         return false;
       }
     }
-    else if (argTypes[i] == ARG_ARRAY)
+    else if (valueTypes[i] == VALUE_ARRAY)
     {
-      if (!args[i]->IsArray())
+      if (!cbInfo[i]->IsArray())
       {
         DEBUG_error("%s arg %d should be an array", funcName, i+1);
         return false;
@@ -251,12 +196,67 @@ static bool func_verify_args(
   return true;
 }
 
-static void init(Local<Object> exports)
+static bool verify_array(
+  const v8::Local<v8::Array>& array,
+  const std::vector<ValueTypes>& valueTypes)
 {
-  NODE_SET_METHOD(exports, "clear_parameter", clear_parameter);
-  NODE_SET_METHOD(exports, "load_file", load_file);
-  NODE_SET_METHOD(exports, "setup_parameters", setup_parameters);
-  NODE_SET_METHOD(exports, "get_param_data", get_param_data);
+  if (array->Length() != (int)valueTypes.size())
+    return false;
+
+  // TODO this possibly still uses non-NAN stuff.
+  for (int i = 0; i < (int)array->Length(); i++)
+  {
+    v8::Local<v8::Value> ai = Nan::Get(array, i).ToLocalChecked();
+    if (valueTypes[i] == VALUE_INT)
+      if (!ai->IsInt32())
+        return false;
+
+    else if (valueTypes[i] == VALUE_STR)
+      if (!ai->IsString())
+        return false;
+
+    else if (valueTypes[i] == VALUE_ARRAY)
+      if (!ai->IsArray())
+        return false;
+  }
+
+  return true;
+}
+
+void DEBUG_error(const char* format, ...)
+{
+  const int MSG_MAX_LENGTH = 1024;
+  const char* MSG_PREFIX = "ERROR (DBG): ";
+  char msg[MSG_MAX_LENGTH];
+
+  int cx = snprintf(msg, MSG_MAX_LENGTH, "%s", MSG_PREFIX);
+  if (cx < 0)
+    ThrowError("ERROR (DBG): received error, couldn't get message (the irony)");
+
+  va_list args;
+  va_start(args, format);
+  int cx2 = vsnprintf(msg + cx, MSG_MAX_LENGTH - cx, format, args);
+  va_end(args);
+  if (cx2 < 0)
+    ThrowError("ERROR (DBG): received error, couldn't get message (the irony)");
+
+  if ((cx + cx2) >= MSG_MAX_LENGTH)
+    printf("WARNING (DBG): error message too long, truncated\n");
+
+  ThrowError(msg);
+}
+
+NAN_MODULE_INIT(init)
+{
+  Set(target,
+    New<v8::String>("clear_parameter").ToLocalChecked(),
+    New<v8::FunctionTemplate>(clear_parameter)->GetFunction());
+  Set(target,
+    New<v8::String>("load_file").ToLocalChecked(),
+    New<v8::FunctionTemplate>(load_file)->GetFunction());
+  Set(target,
+    New<v8::String>("get_param_data").ToLocalChecked(),
+    New<v8::FunctionTemplate>(get_param_data)->GetFunction());
 }
 
 NODE_MODULE(main, init)

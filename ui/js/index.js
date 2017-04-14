@@ -6,13 +6,12 @@
 // ========== Data loaded from formats.json ==========
 let plasmaParameters = [];
 let dispersionRelations = [];
+let constants = [];
+let calculatedParameters = [];
 // ===================================================
 
 // Load native C++ module.
 const cppmain = require("../cpp/build/Release/main");
-
-// External libraries
-const d3 = require("d3");
 
 // Chrome-style tabs global variable
 let chromeTabs = null;
@@ -70,7 +69,6 @@ function dispSelect(event)
     $("#" + dispRelInfo["req"][i]).appendTo($("#required"));
 }
 
-/* Input data file has been changed. */
 function fileChange(event)
 {
   // TODO change parameter coords in CPP when x/y/z or x,y/y,z/x,z option change
@@ -125,7 +123,8 @@ function fileChange(event)
       coordTypes[1] = 2;
     }
   }
-  var success = cppmain.load_file(filepath, paramInfo["alias"], dataDim, coordTypes);
+  var success = cppmain.load_file(filepath, paramInfo["alias"],
+    dataDim, coordTypes);
   if (success)
   {
     paramFilename.text(filename);
@@ -178,14 +177,16 @@ function param2D(event)
   param.find(".paramPlot").show();
 }
 
-function loadFormats()
+function loadFormats(filePath)
 {
   var fs = require("fs");
-  var contents = fs.readFileSync("ui/formats.json");
+  var contents = fs.readFileSync(filePath);
   var formats = JSON.parse(contents);
 
   plasmaParameters = formats["PlasmaParameters"];
   dispersionRelations = formats["DispersionRelations"];
+  constants = formats["Constants"];
+  calculatedParameters = formats["CalculatedParameters"];
 
   // Check all dispersion relation fields for validity
   // 1. Duplicate parameter names/aliases.
@@ -245,8 +246,7 @@ $(function() {
   console.log("Chrome version: " + process.versions.chrome);
   console.log("Electron version: " + process.versions.electron);
 
-  loadFormats();
-  cppmain.setup_parameters(plasmaParameters.length);
+  loadFormats("ui/formats.json");
 
   // Initialize chrome tabs
   var chromeTabsEl = document.querySelector('.chrome-tabs');

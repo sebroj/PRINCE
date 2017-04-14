@@ -12,7 +12,6 @@ enum CoordType
   COORD_Z = 2
 };
 
-bool set_parameter_count(int count);
 void clear_data(const char* alias);
 bool load_data(
   const char* path, const char* alias,

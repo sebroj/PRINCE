@@ -133,10 +133,6 @@ bool load_data(
 {
   const int BUF_SIZE = 256;
 
-  // TODO compiler warning test
-  size_t hello = 1;
-  int hello2 = hello;
-
   printf("DBG: parameter: %s\n", alias);
   printf("     dimension: %d-D\n", dim);
   printf("     coords:    %d, %d\n", coordTypes[0], coordTypes[1]);

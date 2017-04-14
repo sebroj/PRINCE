@@ -8,7 +8,7 @@
 #include <array>
 
 #include "node_main.h"
-//#include "extern/exprtk.h"
+#include "extern/tinyexpr/tinyexpr.h"
 
 // TODO all user errors have been labeled as "ERROR (USR): message"
 // centralize this logging system. Messages will be improved in future revision.
@@ -132,6 +132,28 @@ bool load_data(
   int dim, CoordType coordTypes[2])
 {
   const int BUF_SIZE = 256;
+
+  const char* exprStr = "sqrt(x^2 + y^2)";
+
+  double x, y;
+  te_variable vars[] = {{"x", &x}, {"y", &y}};
+  int err;
+  te_expr* expr = te_compile(exprStr, vars, 2, &err);
+  if (expr)
+  {
+    x = 3; y = 4;
+    const double h1 = te_eval(expr);
+    printf("DBG: expr with %f, %f = %f\n", x, y, h1);
+    x = 5; y = 12;
+    const double h2 = te_eval(expr);
+    printf("DBG: expr with %f, %f = %f\n", x, y, h2);
+
+    te_free(expr);
+  }
+  else
+  {
+    DEBUG_error("expression %s failed to parse at $d", exprStr, err);
+  }
 
   printf("DBG: parameter: %s\n", alias);
   printf("     dimension: %d-D\n", dim);

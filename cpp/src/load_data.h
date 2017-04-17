@@ -13,10 +13,17 @@ enum CoordType
 };
 
 void clear_data(const char* alias);
+
 bool load_data(
-  const char* path, const char* alias,
+  const char* alias, const char* path,
   int dim, CoordType coordTypes[2]);
+bool load_data(
+  const char* alias, const char* valueStr);
+
+bool calculate(const char* alias, const char* expr);
+
 const std::vector<std::vector<double>>* get_points(const char* alias);
+
 const std::vector<double>* get_values(const char* alias);
 
 void to_regular_grid(

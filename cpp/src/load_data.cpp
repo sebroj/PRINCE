@@ -13,8 +13,27 @@
 // TODO all user errors have been labeled as "ERROR (USR): message"
 // centralize this logging system. Messages will be improved in future revision.
 
-class Parameter
+class Param
 {
+};
+
+// Stores information regarding the state of all plasma parameters.
+class ParamLinker
+{
+  bool match;
+
+  // Have some sort of mapping here for params of different dimensions?
+
+public:
+  ParamLinker()
+  {
+    match = false;
+  }
+
+  void update()
+  {
+    // Go through all rawParams, check they all match, set match flag.
+  }
 };
 
 class ParameterRaw
@@ -52,6 +71,7 @@ public:
   }
 };
 
+ParamLinker paramLinker;
 std::map<std::string, ParameterRaw> rawParams;
 
 // Trim leading and trailing whitespace from str IN PLACE.
@@ -128,32 +148,10 @@ void clear_data(const char* alias)
 }
 
 bool load_data(
-  const char* path, const char* alias,
+  const char* alias, const char* path,
   int dim, CoordType coordTypes[2])
 {
   const int BUF_SIZE = 256;
-
-  const char* exprStr = "sqrt(x^2 + y^2)";
-
-  double x, y;
-  te_variable vars[] = {{"x", &x}, {"y", &y}};
-  int err;
-  te_expr* expr = te_compile(exprStr, vars, 2, &err);
-  if (expr)
-  {
-    x = 3; y = 4;
-    const double h1 = te_eval(expr);
-    printf("DBG: expr with %f, %f = %f\n", x, y, h1);
-    x = 5; y = 12;
-    const double h2 = te_eval(expr);
-    printf("DBG: expr with %f, %f = %f\n", x, y, h2);
-
-    te_free(expr);
-  }
-  else
-  {
-    DEBUG_error("expression %s failed to parse at $d", exprStr, err);
-  }
 
   printf("DBG: parameter: %s\n", alias);
   printf("     dimension: %d-D\n", dim);
@@ -210,6 +208,26 @@ bool load_data(
 
   ParameterRaw parameterRaw(coordTypes, points, values);
   rawParams[alias] = parameterRaw;
+
+  return true;
+}
+
+bool load_data(const char* alias, const char* valueStr)
+{
+  printf("DBG: parameter: %s\n", alias);
+  printf("     dimension: 0-D\n");
+  printf("     coords:    -1, -1\n");
+  printf("     value string: %s\n", valueStr);
+
+  // TODO load 0-D parameter
+
+  return false;
+}
+
+bool calculate(const char* alias, const char* expr)
+{
+  printf("DBG: calculating %s\n", alias);
+  printf("     expression: %s\n", expr);
 
   return true;
 }

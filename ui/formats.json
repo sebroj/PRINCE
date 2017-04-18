@@ -126,70 +126,80 @@
       "symbol": "\\omega_{p, \\text{e}}",
       "alias": "wpe",
       "formula": "\\sqrt{\\nicefrac{e^2n_\\text{e}}{\\epsilon_0m_\\text{e}}}",
-      "expr": "sqrt((e^2 * ne) / (eps0 * me))"
+      "expr": "sqrt((e^2 * ne) / (eps0 * me))",
+      "exprVars": ["e", "ne", "eps0", "me"]
     },
     {
       "name": "Ion Plasma Frequency",
       "symbol": "\\omega_{p,\\text{i}}",
       "alias": "wpi",
       "formula": "\\sqrt{\\nicefrac{e^2n_\\text{e}}{\\epsilon_0m_\\text{i}}}",
-      "expr": "sqrt((e^2 * ne) / (eps0 * mi))"
+      "expr": "sqrt((e^2 * ne) / (eps0 * mi))",
+      "exprVars": ["e", "ne", "esp0", "mi"]
     },
     {
       "name": "Electron Debye Length",
       "symbol": "\\lambda_{D,\\text{e}}",
       "alias": "lambdaDe",
       "formula": "\\sqrt{\\nicefrac{T_\\text{e}\\epsilon_0}{e^2n_\\text{e}}}",
-      "expr": "sqrt((Te * eps0) / (e^2 * ne))"
+      "expr": "sqrt((Te * eps0) / (e^2 * ne))",
+      "exprVars": ["Te", "esp0", "e", "ne"]
     },
     {
       "name": "Ion Debye Length",
       "symbol": "\\lambda_{D,\\text{i}}",
       "alias": "lambdaDi",
       "formula": "\\sqrt{\\nicefrac{T_\\text{i}\\epsilon_0}{e^2n_\\text{e}}}",
-      "expr": "sqrt((Ti * eps0) / (e^2 * ne))"
+      "expr": "sqrt((Ti * eps0) / (e^2 * ne))",
+      "exprVars": ["Ti", "eps0", "e", "ne"]
     },
     {
       "name": "Electron Thermal Velocity",
       "symbol": "v_{T,\\text{e}}",
       "alias": "vTe",
       "formula": "\\sqrt{\\nicefrac{T_\\text{e}}{m_\\text{e}}}",
-      "expr": "sqrt(Te / me)"
+      "expr": "sqrt(Te / me)",
+      "exprVars": ["Te", "me"]
     },
     {
       "name": "Ion Thermal Velocity",
       "symbol": "v_{T,\\text{i}}",
       "alias": "vTi",
       "formula": "\\sqrt{\\nicefrac{T_\\text{i}}{m_\\text{i}}}",
-      "expr": "sqrt(Ti / mi)"
+      "expr": "sqrt(Ti / mi)",
+      "exprVars": ["Ti", "mi"]
     },
     {
       "name": "Ion Sound Speed",
       "symbol": "c_S",
       "alias": "cS",
       "formula": "\\sqrt{\\nicefrac{(T_\\text{e}+3T_\\text{i})}{m_\\text{e}}}",
-      "expr": "sqrt((Te + 3 * Ti) / me)"
+      "expr": "sqrt((Te + 3 * Ti) / me)",
+      "exprVars": ["Te", "Ti", "me"]
     },
     {
       "name": "Electron Cyclotron Frequency",
       "symbol": "\\omega_{c,\\text{e}}",
       "alias": "wce",
       "formula": "\\nicefrac{eB}{m_\\text{e}}",
-      "expr": ""
+      "expr": "",
+      "exprVars": []
     },
     {
       "name": "Ion Cyclotron Frequency",
       "symbol": "\\omega_{c,\\text{i}}",
       "alias": "wci",
       "formula": "\\nicefrac{eB}{m_\\text{i}}",
-      "expr": ""
+      "expr": "",
+      "exprVars": []
     },
     {
       "name": "Alfv\\'en Velocity",
       "symbol": "\\nicefrac{B}{\\sqrt{\\mu_0n_\\text{e}m_\\text{i}}}",
       "alias": "vA",
       "formula": "\\nicefrac{B}{\\sqrt{\\mu_0n_\\text{e}m_\\text{i}}}",
-      "expr": ""
+      "expr": "",
+      "exprVars": []
     }
   ]
 }

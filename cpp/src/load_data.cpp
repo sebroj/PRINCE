@@ -104,8 +104,7 @@ static std::vector<double> read_line_doubles(char* line)
   char* start = line;
   char* delim = line;
   bool nullChar = false;
-  while (!nullChar)
-  {
+  while (!nullChar) {
     while (*delim != ',' && *delim != '\0')
       delim++;
 
@@ -116,8 +115,7 @@ static std::vector<double> read_line_doubles(char* line)
     start = trim_whitespace(start);
     char* endptr = start;
     double value = strtod(start, &endptr);
-    if (endptr == start || *endptr != '\0')
-    {
+    if (endptr == start || *endptr != '\0') {
       printf("    LINE ERROR (USR): Malformed number \"%s\"\n", start);
       return std::vector<double>();
     }
@@ -165,17 +163,14 @@ bool load_data(
   std::vector<std::vector<double>> data;
   char buf[BUF_SIZE];
   int lineNumber = 1;
-  while (fgets(buf, BUF_SIZE, fp))
-  {
+  while (fgets(buf, BUF_SIZE, fp)) {
     char* trimmed = trim_whitespace(buf);
     std::vector<double> lineData = read_line_doubles(trimmed);
-    if (lineData.empty())
-    {
+    if (lineData.empty()) {
       printf("ERROR (USR): unable to read line %d\n", lineNumber);
       return false;
     }
-    if ((int)lineData.size() != dim + 1)
-    {
+    if ((int)lineData.size() != dim + 1) {
       printf("    LINE ERROR (USR): Read %d values, expected %d.\n",
         (int)lineData.size(), dim + 1);
       printf("ERROR (USR): unable to read line %d\n", lineNumber);
@@ -196,8 +191,7 @@ bool load_data(
   // Separate data into points and values.
   std::vector<std::vector<double>> points;
   std::vector<double> values;
-  for (const std::vector<double>& d : data)
-  {
+  for (const std::vector<double>& d : data) {
     std::vector<double> point;
     for (int i = 0; i < dim; i++)
       point.push_back(d[i]);
@@ -252,8 +246,7 @@ void to_regular_grid(
   const std::vector<double>& values,
   std::vector<double>& out_values)
 {
-  for (double value : values)
-  {
+  for (double value : values) {
     out_values.push_back(value);
   }
 }
@@ -274,13 +267,13 @@ public:
   {
     if (points.empty())
     {
-      DEBUG_error("new points were empty");
+      DEBUGError("new points were empty");
       return false;
     }
     int pointsDim = (int)points[0].size();
     if (pointsDim != 1 && pointsDim != 2)
     {
-      DEBUG_error("new points aren't 1-D or 2-D");
+      DEBUGError("new points aren't 1-D or 2-D");
       return false;
     }
 
@@ -412,7 +405,7 @@ public:
     else if (coords1D.empty() && !coords2D.empty())
       return 2;
 
-    DEBUG_error("both coords1D and coords2D are set");
+    DEBUGError("both coords1D and coords2D are set");
     return -1;
   }
 };

@@ -5,4 +5,4 @@
 
 // Sends a debug/assert error message to Node.
 // Arguments are formatted according to C's printf standard.
-void DEBUG_error(const char* format, ...);
+void DEBUGError(const char* format, ...);

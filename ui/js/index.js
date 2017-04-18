@@ -3,43 +3,33 @@
 // index.js
 // Main script for index.html
 
-// ========== Data loaded from formats.json ==========
-let plasmaParams = [];
-let dispRels = [];
-let constants = [];
-let calcParams = [];
-// ===================================================
-
 // Load native C++ module.
 const cppmain = require("../cpp/build/Release/main");
 
 // Chrome-style tabs global variable
 let chromeTabs = null;
 
-function paramFromName(name)
+function ParamFromName(name)
 {
-  for (let i = 0; i < plasmaParams.length; i++)
-  {
+  for (let i = 0; i < plasmaParams.length; i++) {
     if (plasmaParams[i]["name"] === name)
       return plasmaParams[i];
   }
   return null;
 }
 
-function paramFromAlias(alias)
+function ParamFromAlias(alias)
 {
-  for (let i = 0; i < plasmaParams.length; i++)
-  {
+  for (let i = 0; i < plasmaParams.length; i++) {
     if (plasmaParams[i]["alias"] === name)
       return plasmaParams[i];
   }
   return null;
 }
 
-function dispRelFromName(name)
+function DispRelFromName(name)
 {
-  for (let i = 0; i < dispRels.length; i++)
-  {
+  for (let i = 0; i < dispRels.length; i++) {
     if (dispRels[i]["name"] === name)
       return dispRels[i];
   }
@@ -47,16 +37,16 @@ function dispRelFromName(name)
 }
 
 /* Toggle between hiding and showing the dropdown content */
-function toggleDropdown()
+function ToggleDropdown()
 {
   $("#dispDropdown").toggle();
 }
 
 /* Dispersion relation has been selected. */
-function dispSelect(event)
+function DispSelect(event)
 {
   var dispRelName = $(event.target).text();
-  var dispRelInfo = dispRelFromName(dispRelName);
+  var dispRelInfo = DispRelFromName(dispRelName);
 
   // Update dropdown button text.
   $("#dropdownButton").text(dispRelName);
@@ -69,7 +59,7 @@ function dispSelect(event)
     $("#" + dispRelInfo["req"][i]).appendTo($("#required"));
 }
 
-function fileChange(event)
+function FileChange(event)
 {
   // TODO change parameter coords in CPP when x/y/z or x,y/y,z/x,z option change
 
@@ -85,7 +75,7 @@ function fileChange(event)
 
   var parameter = $(event.target).closest(".parameter");
   var paramName = parameter.find(".paramName").text();
-  var paramInfo = paramFromName(paramName);
+  var paramInfo = ParamFromName(paramName);
   var paramFilename = parameter.find(".paramFilename");
 
   var checkedRadioDim = parameter.find(".paramDataType").find("input:checked");
@@ -94,8 +84,7 @@ function fileChange(event)
     dataDim = 2;
 
   var coordTypes = [-1, -1];
-  if (dataDim == 1)
-  {
+  if (dataDim == 1) {
     var checkedRadioFormat = parameter.find(".format1D").find("input:checked");
     if (checkedRadioFormat.attr("class") == "radioX")
       coordTypes[0] = 0;
@@ -104,47 +93,41 @@ function fileChange(event)
     else if (checkedRadioFormat.attr("class") == "radioZ")
       coordTypes[0] = 2;
   }
-  else
-  {
+  else {
     var checkedRadioFormat = parameter.find(".format2D").find("input:checked");
-    if (checkedRadioFormat.attr("class") == "radioXY")
-    {
+    if (checkedRadioFormat.attr("class") == "radioXY") {
       coordTypes[0] = 0;
       coordTypes[1] = 1;
     }
-    if (checkedRadioFormat.attr("class") == "radioXZ")
-    {
+    if (checkedRadioFormat.attr("class") == "radioXZ") {
       coordTypes[0] = 0;
       coordTypes[1] = 2;
     }
-    if (checkedRadioFormat.attr("class") == "radioYZ")
-    {
+    if (checkedRadioFormat.attr("class") == "radioYZ") {
       coordTypes[0] = 1;
       coordTypes[1] = 2;
     }
   }
-  var success = cppmain.load_parameter(paramInfo["alias"], filepath, dataDim, coordTypes);
-  if (success)
-  {
+  var success = cppmain.LoadParameter(paramInfo["alias"], filepath, dataDim, coordTypes);
+  if (success) {
     paramFilename.text(filename);
   }
-  else
-  {
+  else {
     console.log("FAILED");
     paramFilename.text("No file selected");
   }
 }
 
-function load0D(paramInfo, valueStr)
+function Load0D(paramInfo, valueStr)
 {
-  cppmain.load_parameter(paramInfo["alias"], valueStr, 0, [-1, -1]);
+  cppmain.LoadParameter(paramInfo["alias"], valueStr, 0, [-1, -1]);
 }
 
-function paramBoxReset(param)
+function ParamBoxReset(param)
 {
   var paramName = param.find(".paramName").text();
-  var paramInfo = paramFromName(paramName);
-  cppmain.clear_parameter(paramInfo["alias"]);
+  var paramInfo = ParamFromName(paramName);
+  cppmain.ClearParameter(paramInfo["alias"]);
 
   param.find(".paramDataValue").hide();
   param.find(".format1D").hide();
@@ -155,96 +138,30 @@ function paramBoxReset(param)
 }
 
 // TODO factor 0-D, 1-D, and 2-D param UI elements into one div?
-function param0D(event)
+function Param0D(event)
 {
   var param = $(event.target).closest(".parameter");
-  paramBoxReset(param);
+  ParamBoxReset(param);
 
   param.find(".paramDataValue").show();
 }
-function param1D(event)
+function Param1D(event)
 {
   var param = $(event.target).closest(".parameter");
-  paramBoxReset(param);
+  ParamBoxReset(param);
 
   param.find(".format1D").show();
   param.find(".paramDataFile").show();
   param.find(".paramPlot").show();
 }
-function param2D(event)
+function Param2D(event)
 {
   var param = $(event.target).closest(".parameter");
-  paramBoxReset(param);
+  ParamBoxReset(param);
 
   param.find(".format2D").show();
   param.find(".paramDataFile").show();
   param.find(".paramPlot").show();
-}
-
-function loadFormats(filePath)
-{
-  var fs = require("fs");
-  var contents = fs.readFileSync(filePath);
-  var formats = JSON.parse(contents);
-
-  plasmaParams = formats["PlasmaParameters"];
-  dispRels = formats["DispersionRelations"];
-  constants = formats["Constants"];
-  calcParams = formats["CalculatedParameters"];
-
-  // Check all dispersion relation fields for validity
-  // 1. Duplicate parameter names/aliases.
-  for (let i = 0; i < plasmaParams.length; i++)
-  {
-    for (let j = i + 1; j < plasmaParams.length; j++)
-    {
-      if (plasmaParams[i]["name"] === plasmaParams[j]["name"])
-        // TODO make a DEBUG_error type thing for this
-        throw "ERROR (DBG): Duplicate plasma parameter name - "
-          + plasmaParams[i]["name"];
-      if (plasmaParams[i]["alias"] === plasmaParams[j]["alias"])
-        throw "ERROR (DBG): Duplicate plasma parameter alias - "
-          + plasmaParams[i]["alias"];
-    }
-  }
-  // 2. Duplicate dispersion relation names.
-  for (let i = 0; i < dispRels.length; i++)
-  {
-    for (let j = i + 1; j < dispRels.length; j++)
-    {
-      if (dispRels[i]["name"] === dispRels[j]["name"])
-        // TODO make a DEBUG_error type thing for this
-        throw "ERROR (DBG): Duplicate dispersion relation name - "
-          + dispRels[i]["name"];
-    }
-  }
-  // 3. Existence of dispersion relation required parameters.
-  for (let i = 0; i < dispRels.length; i++)
-  {
-    var dispRel = dispRels[i];
-    for (let j = 0; j < dispRel["req"].length; j++)
-    {
-      var req = dispRel["req"][j];
-      var exists = false;
-      for (let p = 0; p < plasmaParams.length; p++)
-      {
-        if (req === plasmaParams[p]["alias"])
-        {
-          exists = true;
-          break;
-        }
-      }
-      if (!exists)
-      {
-        // TODO make a DEBUG_error type thing for this
-        throw "ERROR (DBG): " + dispRel["name"]
-          + " requires non-existent parameter: " + dispRel["req"][j];
-      }
-    }
-  }
-
-  cppmain.setup(plasmaParams, dispRels,
-    formats["Constants"], formats["CalculatedParameters"]);
 }
 
 $(function() {
@@ -253,7 +170,7 @@ $(function() {
   console.log("Chrome version: " + process.versions.chrome);
   console.log("Electron version: " + process.versions.electron);
 
-  loadFormats("ui/formats.json");
+  LoadFormats("ui/formats.json");
 
   // Initialize chrome tabs
   var chromeTabsEl = document.querySelector('.chrome-tabs');
@@ -267,7 +184,7 @@ $(function() {
   $(chromeTabsEl).on("activeTabChange", function(data) {
     var tabEl = data.detail.tabEl;
     var tabName = $(tabEl).find(".chrome-tab-title").text();
-    var paramInfo = paramFromName(tabName);
+    var paramInfo = ParamFromName(tabName);
     $(".tab-page").each(function() { $(this).hide(); });
     if (paramInfo === null)
       $("#" + tabName).show();
@@ -283,7 +200,7 @@ $(function() {
   $(chromeTabsEl).on("tabRemove", function(data) {
     tabEl = data.detail.tabEl;
     var tabName = $(tabEl).find(".chrome-tab-title").text();
-    var paramInfo = paramFromName(tabName);
+    var paramInfo = ParamFromName(tabName);
     $("#tab-" + paramInfo["alias"]).remove();
   });
 
@@ -291,8 +208,7 @@ $(function() {
 
   // Generate plasma parameter divs.
   var paramPrototype = $(".parameter");
-  for (let i = 0; i < plasmaParams.length; i++)
-  {
+  for (let i = 0; i < plasmaParams.length; i++) {
     let paramInfo = plasmaParams[i];
     let clone = paramPrototype.clone(true);
     clone.attr("id", paramInfo["alias"]);
@@ -322,23 +238,22 @@ $(function() {
   paramPrototype.remove();
 
   // Add dispersion relations.
-  for (let i = 0; i < dispRels.length; i++)
-  {
+  for (let i = 0; i < dispRels.length; i++) {
     let dispRelName = dispRels[i]["name"];
     let $dispRelButton = $("<button>" + dispRelName + "</button>")
       .addClass("dispButton")
       .appendTo("#dispDropdown");
   }
   // Add click callbacks.
-  $("#dropdownButton").click(toggleDropdown);
+  $("#dropdownButton").click(ToggleDropdown);
 
-  $(".dispButton").each(function() { $(this).click(dispSelect); });
-  $(".paramFileButton").each(function() { $(this).click(fileChange); });
-  $(".paramPlotButton").each(function() { $(this).click(paramPlot); });
+  $(".dispButton").each(function() { $(this).click(DispSelect); });
+  $(".paramFileButton").each(function() { $(this).click(FileChange); });
+  $(".paramPlotButton").each(function() { $(this).click(ParamPlot); });
 
-  $(".radio0D").each(function() { $(this).click(param0D); });
-  $(".radio1D").each(function() { $(this).click(param1D); });
-  $(".radio2D").each(function() { $(this).click(param2D); });
+  $(".radio0D").each(function() { $(this).click(Param0D); });
+  $(".radio1D").each(function() { $(this).click(Param1D); });
+  $(".radio2D").each(function() { $(this).click(Param2D); });
 
   // Add sneaky lose-focus for 0-D input field.
   $(".submitHidden").each(function() {
@@ -347,14 +262,13 @@ $(function() {
       $paramValueField.blur();
       var param = $(this).closest(".parameter");
       var paramName = param.find(".paramName").text();
-      var paramInfo = paramFromName(paramName);
-      load0D(paramInfo, $paramValueField.val());
+      var paramInfo = ParamFromName(paramName);
+      Load0D(paramInfo, $paramValueField.val());
     });
   });
 
   // Add calculated parameter buttons.
-  for (let i = 0; i < calcParams.length; i++)
-  {
+  for (let i = 0; i < calcParams.length; i++) {
     var $button = $("<button>" + calcParams[i]["name"] + "</button>");
     $button.appendTo($("#solverSettings"));
     $button.click(function(event) {

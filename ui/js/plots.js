@@ -1,13 +1,13 @@
 const d3 = require("d3");
 
-function paramPlot(event)
+function ParamPlot(event)
 {
   var parameter = $(event.target).closest(".parameter");
   var paramName = parameter.find(".paramName").text();
-  var paramInfo = paramFromName(paramName);
+  var paramInfo = ParamFromName(paramName);
 
   // Try to get the data
-  paramData = cppmain.get_param_data(paramInfo["alias"]);
+  paramData = cppmain.GetParamData(paramInfo["alias"]);
   if (paramData == null) {
     // TODO handle user errors globally
     console.log("ERROR (USR): No parameter data.");
@@ -23,8 +23,7 @@ function paramPlot(event)
   var $div = $("<div>", {id: "tab-" + paramInfo["alias"], "class": "tab-page"});
   $("body").append($div);
 
-  if (paramData["dim"] == 1)
-  {
+  if (paramData["dim"] == 1) {
     // 1-D plot
     dataPairs = [];
     data = paramData["data"];
@@ -78,8 +77,7 @@ function paramPlot(event)
     svg.append("g")
       .call(d3.axisLeft(y));
   }
-  if (paramData["dim"] == 2)
-  {
+  if (paramData["dim"] == 2) {
     var width = paramData["width"];
     var height = paramData["height"];
     var values = paramData["data"];
@@ -91,8 +89,7 @@ function paramPlot(event)
       .interpolate(d3.interpolateHcl);
 
     var imagePixels = new Uint8ClampedArray(values.length * 4);
-    for (let i = 0; i < values.length; i++)
-    {
+    for (let i = 0; i < values.length; i++) {
       let byte = Math.round(values[i] / maxValue * 255);
 
       imagePixels[i * 4] = byte;

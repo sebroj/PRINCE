@@ -26,11 +26,11 @@ enum ValueTypes
   VALUE_OBJ
 };
 
-static bool verify_cb_info(
+static bool VerifyCbInfo(
   const char* funcName,
   const FunctionCallbackInfo<v8::Value>& cbInfo,
   const std::vector<ValueTypes>& valueTypes);
-static bool verify_array(
+static bool VerifyArray(
   const Local<v8::Array>& array,
   const std::vector<ValueTypes>& valueTypes);
 
@@ -49,38 +49,37 @@ public:
   }
 };
 
-NAN_METHOD(clear_parameter)
+NAN_METHOD(ClearParameter)
 {
   const FunctionCallbackInfo<v8::Value> &cbInfo = info;
   std::vector<ValueTypes> cbInfoTypes({ VALUE_STR });
-  if (!verify_cb_info(__FUNCTION__, cbInfo, cbInfoTypes))
+  if (!VerifyCbInfo(__FUNCTION__, cbInfo, cbInfoTypes))
     return;
 
   StringConv alias(cbInfo[0]);
   clear_data(alias.cstr());
 }
 
-NAN_METHOD(load_parameter)
+NAN_METHOD(LoadParameter)
 {
   const FunctionCallbackInfo<v8::Value> &cbInfo = info;
   std::vector<ValueTypes> cbInfoTypes(
     { VALUE_STR, VALUE_STR, VALUE_INT, VALUE_ARRAY });
-  if (!verify_cb_info(__FUNCTION__, cbInfo, cbInfoTypes))
+  if (!VerifyCbInfo(__FUNCTION__, cbInfo, cbInfoTypes))
     return;
 
   // Verify array argument
   Local<v8::Array> array = cbInfo[3].As<v8::Array>();
   std::vector<ValueTypes> arrayTypes({ VALUE_INT, VALUE_INT });
-  if (!verify_array(array, arrayTypes))
-  {
-    DEBUG_error("%s coordTypes array is misformatted.", __FUNCTION__);
+  if (!VerifyArray(array, arrayTypes)) {
+    DEBUGError("%s coordTypes array is misformatted.", __FUNCTION__);
     return;
   }
   int a0 = Nan::To<int>(Nan::Get(array, 0).ToLocalChecked()).FromJust();
   int a1 = Nan::To<int>(Nan::Get(array, 1).ToLocalChecked()).FromJust();
-  if (a0 < COORD_NONE || a0 > COORD_Z || a1 < COORD_NONE || a1 > COORD_Z)
-  {
-    DEBUG_error("%s coordTypes array elements should be CoordType values", __FUNCTION__);
+  if (a0 < COORD_NONE || a0 > COORD_Z || a1 < COORD_NONE || a1 > COORD_Z) {
+    DEBUGError("%s coordTypes array elements should be CoordType values",
+      __FUNCTION__);
     return;
   }
 
@@ -99,11 +98,11 @@ NAN_METHOD(load_parameter)
   cbInfo.GetReturnValue().Set(success);
 }
 
-NAN_METHOD(calc_parameter)
+NAN_METHOD(CalcParameter)
 {
   const FunctionCallbackInfo<v8::Value> &cbInfo = info;
   std::vector<ValueTypes> cbInfoTypes({ VALUE_STR, VALUE_STR });
-  if (!verify_cb_info(__FUNCTION__, cbInfo, cbInfoTypes))
+  if (!VerifyCbInfo(__FUNCTION__, cbInfo, cbInfoTypes))
     return;
 
   StringConv alias(cbInfo[0]);
@@ -112,19 +111,18 @@ NAN_METHOD(calc_parameter)
   cbInfo.GetReturnValue().Set(success);
 }
 
-NAN_METHOD(get_param_data)
+NAN_METHOD(GetParamData)
 {
   const FunctionCallbackInfo<v8::Value> &cbInfo = info;
   std::vector<ValueTypes> cbInfoTypes({ VALUE_STR });
-  if (!verify_cb_info(__FUNCTION__, cbInfo, cbInfoTypes))
+  if (!VerifyCbInfo(__FUNCTION__, cbInfo, cbInfoTypes))
     return;
 
   StringConv alias(cbInfo[0]);
 
   // Attempt to retrieve the data.
   const std::vector<double>* valuesPtr = get_values(alias.cstr());
-  if (valuesPtr == nullptr)
-  {
+  if (valuesPtr == nullptr) {
     cbInfo.GetReturnValue().Set(Null());
     return;
   }
@@ -136,8 +134,7 @@ NAN_METHOD(get_param_data)
 
   Set(result, New<v8::String>("dim").ToLocalChecked(), New<v8::Int32>(dataDim));
 
-  if (dataDim == 1)
-  {
+  if (dataDim == 1) {
     // Transfer 1-D data to the V8 runtime.
     Local<v8::Array> data = New<v8::Array>();
     for (int i = 0; i < (int)points.size(); i++)
@@ -148,8 +145,7 @@ NAN_METHOD(get_param_data)
 
     Set(result, New<v8::String>("data").ToLocalChecked(), data);
   }
-  if (dataDim == 2)
-  {
+  if (dataDim == 2) {
     int height = 0;
     double firstX = points[0][0];
     while (points[++height][0] == firstX) {}
@@ -162,8 +158,7 @@ NAN_METHOD(get_param_data)
     std::vector<double> valuesRegular;
     to_regular_grid(points, values, valuesRegular);
     Local<v8::Array> data = New<v8::Array>();
-    for (int i = 0; i < (int)valuesRegular.size(); i++)
-    {
+    for (int i = 0; i < (int)valuesRegular.size(); i++) {
       // Change index from column-grouping to row-grouping.
       int row = i % height;
       int col = i / height;
@@ -177,12 +172,12 @@ NAN_METHOD(get_param_data)
 }
 
 /* Receive all formats.json data, and any additional information needed. */
-NAN_METHOD(setup)
+NAN_METHOD(Setup)
 {
   const FunctionCallbackInfo<v8::Value> &cbInfo = info;
   std::vector<ValueTypes> cbInfoTypes(
     { VALUE_OBJ, VALUE_OBJ, VALUE_OBJ, VALUE_OBJ });
-  if (!verify_cb_info(__FUNCTION__, cbInfo, cbInfoTypes))
+  if (!VerifyCbInfo(__FUNCTION__, cbInfo, cbInfoTypes))
     return;
 
   Local<v8::Object> plasmaParams = Nan::To<v8::Object>(cbInfo[0]).ToLocalChecked();
@@ -191,56 +186,44 @@ NAN_METHOD(setup)
   Local<v8::Object> calcParams = Nan::To<v8::Object>(cbInfo[3]).ToLocalChecked();
 }
 
-static bool verify_cb_info(
+static bool VerifyCbInfo(
   const char* funcName,
   const FunctionCallbackInfo<v8::Value>& cbInfo,
   const std::vector<ValueTypes>& valueTypes)
 {
-  if (cbInfo.Length() != (int)valueTypes.size())
-  {
-    DEBUG_error("%s expected %d arguments", funcName, (int)valueTypes.size());
+  if (cbInfo.Length() != (int)valueTypes.size()) {
+    DEBUGError("%s expected %d arguments", funcName, (int)valueTypes.size());
     return false;
   }
   // TODO this possibly still uses non-NAN stuff.
-  for (int i = 0; i < cbInfo.Length(); i++)
-  {
-    if (valueTypes[i] == VALUE_INT)
-    {
-      if (!cbInfo[i]->IsInt32())
-      {
-        DEBUG_error("%s arg %d should be an int", funcName, i+1);
+  for (int i = 0; i < cbInfo.Length(); i++) {
+    if (valueTypes[i] == VALUE_INT) {
+      if (!cbInfo[i]->IsInt32()) {
+        DEBUGError("%s arg %d should be an int", funcName, i+1);
         return false;
       }
     }
-    else if (valueTypes[i] == VALUE_STR)
-    {
-      if (!cbInfo[i]->IsString())
-      {
-        DEBUG_error("%s arg %d should be a string", funcName, i+1);
+    else if (valueTypes[i] == VALUE_STR) {
+      if (!cbInfo[i]->IsString()) {
+        DEBUGError("%s arg %d should be a string", funcName, i+1);
         return false;
       }
     }
-    else if (valueTypes[i] == VALUE_ARRAY)
-    {
-      if (!cbInfo[i]->IsArray())
-      {
-        DEBUG_error("%s arg %d should be an array", funcName, i+1);
+    else if (valueTypes[i] == VALUE_ARRAY) {
+      if (!cbInfo[i]->IsArray()) {
+        DEBUGError("%s arg %d should be an array", funcName, i+1);
         return false;
       }
     }
-    else if (valueTypes[i] == VALUE_FUNC)
-    {
-      if (!cbInfo[i]->IsFunction())
-      {
-        DEBUG_error("%s arg %d should be a function", funcName, i+1);
+    else if (valueTypes[i] == VALUE_FUNC) {
+      if (!cbInfo[i]->IsFunction()) {
+        DEBUGError("%s arg %d should be a function", funcName, i+1);
         return false;
       }
     }
-    else if (valueTypes[i] == VALUE_OBJ)
-    {
-      if (!cbInfo[i]->IsObject())
-      {
-        DEBUG_error("%s arg %d should be an object", funcName, i+1);
+    else if (valueTypes[i] == VALUE_OBJ) {
+      if (!cbInfo[i]->IsObject()) {
+        DEBUGError("%s arg %d should be an object", funcName, i+1);
         return false;
       }
     }
@@ -249,7 +232,7 @@ static bool verify_cb_info(
   return true;
 }
 
-static bool verify_array(
+static bool VerifyArray(
   const Local<v8::Array>& array,
   const std::vector<ValueTypes>& valueTypes)
 {
@@ -257,8 +240,7 @@ static bool verify_array(
     return false;
 
   // TODO this possibly still uses non-NAN stuff.
-  for (int i = 0; i < (int)array->Length(); i++)
-  {
+  for (int i = 0; i < (int)array->Length(); i++) {
     Local<v8::Value> ai = Nan::Get(array, i).ToLocalChecked();
     if (valueTypes[i] == VALUE_INT)
       if (!ai->IsInt32())
@@ -280,7 +262,7 @@ static bool verify_array(
   return true;
 }
 
-void DEBUG_error(const char* format, ...)
+void DEBUGError(const char* format, ...)
 {
   const int MSG_MAX_LENGTH = 1024;
   const char* MSG_PREFIX = "ERROR (DBG): ";
@@ -303,23 +285,23 @@ void DEBUG_error(const char* format, ...)
   ThrowError(msg);
 }
 
-NAN_MODULE_INIT(init)
+NAN_MODULE_INIT(Init)
 {
   Set(target,
-    New<v8::String>("clear_parameter").ToLocalChecked(),
-    New<v8::FunctionTemplate>(clear_parameter)->GetFunction());
+    New<v8::String>("ClearParameter").ToLocalChecked(),
+    New<v8::FunctionTemplate>(ClearParameter)->GetFunction());
   Set(target,
-    New<v8::String>("load_parameter").ToLocalChecked(),
-    New<v8::FunctionTemplate>(load_parameter)->GetFunction());
+    New<v8::String>("LoadParameter").ToLocalChecked(),
+    New<v8::FunctionTemplate>(LoadParameter)->GetFunction());
   Set(target,
-    New<v8::String>("calc_parameter").ToLocalChecked(),
-    New<v8::FunctionTemplate>(calc_parameter)->GetFunction());
+    New<v8::String>("CalcParameter").ToLocalChecked(),
+    New<v8::FunctionTemplate>(CalcParameter)->GetFunction());
   Set(target,
-    New<v8::String>("get_param_data").ToLocalChecked(),
-    New<v8::FunctionTemplate>(get_param_data)->GetFunction());
+    New<v8::String>("GetParamData").ToLocalChecked(),
+    New<v8::FunctionTemplate>(GetParamData)->GetFunction());
   Set(target,
-    New<v8::String>("setup").ToLocalChecked(),
-    New<v8::FunctionTemplate>(setup)->GetFunction());
+    New<v8::String>("Setup").ToLocalChecked(),
+    New<v8::FunctionTemplate>(Setup)->GetFunction());
 }
 
-NODE_MODULE(main, init)
+NODE_MODULE(main, Init)

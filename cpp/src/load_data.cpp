@@ -76,7 +76,7 @@ std::map<std::string, ParameterRaw> rawParams;
 
 // Trim leading and trailing whitespace from str IN PLACE.
 // Return a null-terminated substring of str with trimmed whitespace.
-static char* trim_whitespace(char* str)
+static char* TrimWhitespace(char* str)
 {
   // Leading whitespace
   while (isspace(*str))
@@ -97,7 +97,7 @@ static char* trim_whitespace(char* str)
 
 // Read null-terminated string line as a list of comma-separated doubles.
 // Return a vector of the read doubles.
-static std::vector<double> read_line_doubles(char* line)
+static std::vector<double> ReadLineDoubles(char* line)
 {
   std::vector<double> data;
 
@@ -112,7 +112,7 @@ static std::vector<double> read_line_doubles(char* line)
       nullChar = true;
     *delim = '\0';
 
-    start = trim_whitespace(start);
+    start = TrimWhitespace(start);
     char* endptr = start;
     double value = strtod(start, &endptr);
     if (endptr == start || *endptr != '\0') {
@@ -127,7 +127,7 @@ static std::vector<double> read_line_doubles(char* line)
   return data;
 }
 
-static bool compare_data(
+static bool CompareData(
   const std::vector<double>& d1,
   const std::vector<double>& d2)
 {
@@ -136,7 +136,7 @@ static bool compare_data(
   return d1[0] < d2[0];
 }
 
-void clear_data(const char* alias)
+void ClearData(const char* alias)
 {
   printf("DBG: parameter: %s\n", alias);
   printf("     data cleared\n");
@@ -145,7 +145,7 @@ void clear_data(const char* alias)
   rawParams[alias] = paramRaw;
 }
 
-bool load_data(
+bool LoadData(
   const char* alias, const char* path,
   int dim, CoordType coordTypes[2])
 {
@@ -164,8 +164,8 @@ bool load_data(
   char buf[BUF_SIZE];
   int lineNumber = 1;
   while (fgets(buf, BUF_SIZE, fp)) {
-    char* trimmed = trim_whitespace(buf);
-    std::vector<double> lineData = read_line_doubles(trimmed);
+    char* trimmed = TrimWhitespace(buf);
+    std::vector<double> lineData = ReadLineDoubles(trimmed);
     if (lineData.empty()) {
       printf("ERROR (USR): unable to read line %d\n", lineNumber);
       return false;
@@ -181,8 +181,8 @@ bool load_data(
     lineNumber++;
   }
 
-  // Sort data in the ascending order given by compare_data.
-  std::sort(std::begin(data), std::end(data), compare_data);
+  // Sort data in the ascending order given by CompareData.
+  std::sort(std::begin(data), std::end(data), CompareData);
 
   // TODO check if data points are complete (for 2D grid)
   // example implementation: for every data point, reverse (x, y) coords,
@@ -206,7 +206,7 @@ bool load_data(
   return true;
 }
 
-bool load_data(const char* alias, const char* valueStr)
+bool LoadData(const char* alias, const char* valueStr)
 {
   printf("DBG: parameter: %s\n", alias);
   printf("     dimension: 0-D\n");
@@ -218,22 +218,35 @@ bool load_data(const char* alias, const char* valueStr)
   return false;
 }
 
-bool calculate(const char* alias, const char* expr)
+bool Calculate(
+  const char* alias,
+  const char* expr, std::vector<std::string> exprVars)
 {
   printf("DBG: calculating %s\n", alias);
   printf("     expression: %s\n", expr);
+  printf("     exprVars: %s\n", exprVars[0].c_str());
+  for (int i = 1; i < (int)exprVars.size(); i++) {
+    printf("               %s\n", exprVars[i].c_str());
+  }
+
+  for (std::string var : exprVars) {
+    if (rawParams.find(var) == rawParams.end()) {
+      printf("ERROR (USR): parameter %s not loaded\n", var.c_str());
+      return false;
+    }
+  }
 
   return true;
 }
 
-const std::vector<std::vector<double>>* get_points(const char* alias)
+const std::vector<std::vector<double>>* GetPoints(const char* alias)
 {
   if (!rawParams[alias].is_set())
     return nullptr;
 
   return rawParams[alias].get_points();
 }
-const std::vector<double>* get_values(const char* alias)
+const std::vector<double>* GetValues(const char* alias)
 {
   if (!rawParams[alias].is_set())
     return nullptr;
@@ -241,7 +254,7 @@ const std::vector<double>* get_values(const char* alias)
   return rawParams[alias].get_values();
 }
 
-void to_regular_grid(
+void ToRegularGrid(
   const std::vector<std::vector<double>>& points,
   const std::vector<double>& values,
   std::vector<double>& out_values)

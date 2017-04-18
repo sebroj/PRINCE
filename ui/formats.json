@@ -127,7 +127,7 @@
       "alias": "wpe",
       "formula": "\\sqrt{\\nicefrac{e^2n_\\text{e}}{\\epsilon_0m_\\text{e}}}",
       "expr": "sqrt((e^2 * ne) / (eps0 * me))",
-      "exprVars": ["e", "ne", "eps0", "me"]
+      "exprVars": [ "e", "ne", "eps0", "me" ]
     },
     {
       "name": "Ion Plasma Frequency",
@@ -135,7 +135,7 @@
       "alias": "wpi",
       "formula": "\\sqrt{\\nicefrac{e^2n_\\text{e}}{\\epsilon_0m_\\text{i}}}",
       "expr": "sqrt((e^2 * ne) / (eps0 * mi))",
-      "exprVars": ["e", "ne", "esp0", "mi"]
+      "exprVars": [ "e", "ne", "eps0", "mi" ]
     },
     {
       "name": "Electron Debye Length",
@@ -143,7 +143,7 @@
       "alias": "lambdaDe",
       "formula": "\\sqrt{\\nicefrac{T_\\text{e}\\epsilon_0}{e^2n_\\text{e}}}",
       "expr": "sqrt((Te * eps0) / (e^2 * ne))",
-      "exprVars": ["Te", "esp0", "e", "ne"]
+      "exprVars": [ "Te", "eps0", "e", "ne" ]
     },
     {
       "name": "Ion Debye Length",
@@ -151,7 +151,7 @@
       "alias": "lambdaDi",
       "formula": "\\sqrt{\\nicefrac{T_\\text{i}\\epsilon_0}{e^2n_\\text{e}}}",
       "expr": "sqrt((Ti * eps0) / (e^2 * ne))",
-      "exprVars": ["Ti", "eps0", "e", "ne"]
+      "exprVars": [ "Ti", "eps0", "e", "ne" ]
     },
     {
       "name": "Electron Thermal Velocity",
@@ -159,7 +159,7 @@
       "alias": "vTe",
       "formula": "\\sqrt{\\nicefrac{T_\\text{e}}{m_\\text{e}}}",
       "expr": "sqrt(Te / me)",
-      "exprVars": ["Te", "me"]
+      "exprVars": [ "Te", "me" ]
     },
     {
       "name": "Ion Thermal Velocity",
@@ -167,7 +167,7 @@
       "alias": "vTi",
       "formula": "\\sqrt{\\nicefrac{T_\\text{i}}{m_\\text{i}}}",
       "expr": "sqrt(Ti / mi)",
-      "exprVars": ["Ti", "mi"]
+      "exprVars": [ "Ti", "mi" ]
     },
     {
       "name": "Ion Sound Speed",
@@ -175,7 +175,7 @@
       "alias": "cS",
       "formula": "\\sqrt{\\nicefrac{(T_\\text{e}+3T_\\text{i})}{m_\\text{e}}}",
       "expr": "sqrt((Te + 3 * Ti) / me)",
-      "exprVars": ["Te", "Ti", "me"]
+      "exprVars": [ "Te", "Ti", "me" ]
     },
     {
       "name": "Electron Cyclotron Frequency",

@@ -41,9 +41,10 @@ class StringConv
 public:
   StringConv(const Local<v8::Value>& value)
     : str(value)
-  {}
+  {
+  }
 
-  const char* cstr() const
+  const char* c_str() const
   {
     return *str ? *str : "STRING CONVERSION FAILED";
   }
@@ -57,7 +58,7 @@ NAN_METHOD(ClearParameter)
     return;
 
   StringConv alias(cbInfo[0]);
-  clear_data(alias.cstr());
+  ClearData(alias.c_str());
 }
 
 NAN_METHOD(LoadParameter)
@@ -91,9 +92,9 @@ NAN_METHOD(LoadParameter)
 
   bool success = false;
   if (dataDim == 0)
-    success = load_data(alias.cstr(), arg2.cstr());
+    success = LoadData(alias.c_str(), arg2.c_str());
   else
-    success = load_data(alias.cstr(), arg2.cstr(), dataDim, coordTypes);
+    success = LoadData(alias.c_str(), arg2.c_str(), dataDim, coordTypes);
 
   cbInfo.GetReturnValue().Set(success);
 }
@@ -101,13 +102,27 @@ NAN_METHOD(LoadParameter)
 NAN_METHOD(CalcParameter)
 {
   const FunctionCallbackInfo<v8::Value> &cbInfo = info;
-  std::vector<ValueTypes> cbInfoTypes({ VALUE_STR, VALUE_STR });
+  std::vector<ValueTypes> cbInfoTypes({ VALUE_STR, VALUE_STR, VALUE_ARRAY });
   if (!VerifyCbInfo(__FUNCTION__, cbInfo, cbInfoTypes))
     return;
 
+  Local<v8::Array> array = cbInfo[2].As<v8::Array>();
+  if (array->Length() == 0) {
+    DEBUGError("%s arg 3 array is empty", __FUNCTION__);
+    return;
+  }
+  std::vector<std::string> exprVars;
+  for (int i = 0; i < (int)array->Length(); i++) {
+    Local<v8::Value> ai = Nan::Get(array, i).ToLocalChecked();
+    if (!ai->IsString())
+      DEBUGError("%s arg 3 array should be all strings.", __FUNCTION__);
+    StringConv aiStr(ai);
+    exprVars.push_back(aiStr.c_str());
+  }
+
   StringConv alias(cbInfo[0]);
   StringConv expr(cbInfo[1]);
-  bool success = calculate(alias.cstr(), expr.cstr());
+  bool success = Calculate(alias.c_str(), expr.c_str(), exprVars);
   cbInfo.GetReturnValue().Set(success);
 }
 
@@ -121,12 +136,12 @@ NAN_METHOD(GetParamData)
   StringConv alias(cbInfo[0]);
 
   // Attempt to retrieve the data.
-  const std::vector<double>* valuesPtr = get_values(alias.cstr());
+  const std::vector<double>* valuesPtr = GetValues(alias.c_str());
   if (valuesPtr == nullptr) {
     cbInfo.GetReturnValue().Set(Null());
     return;
   }
-  const std::vector<std::vector<double>>& points = *get_points(alias.cstr());
+  const std::vector<std::vector<double>>& points = *GetPoints(alias.c_str());
   const std::vector<double>& values = *valuesPtr;
   int dataDim = (int)points[0].size();
 
@@ -156,7 +171,7 @@ NAN_METHOD(GetParamData)
       New<v8::Int32>(height));
 
     std::vector<double> valuesRegular;
-    to_regular_grid(points, values, valuesRegular);
+    ToRegularGrid(points, values, valuesRegular);
     Local<v8::Array> data = New<v8::Array>();
     for (int i = 0; i < (int)valuesRegular.size(); i++) {
       // Change index from column-grouping to row-grouping.

@@ -9,31 +9,18 @@ const cppmain = require("../cpp/build/Release/main");
 // Chrome-style tabs global variable
 let chromeTabs = null;
 
-function ParamFromName(name)
+function InfoFromField(data, fieldName, match)
 {
-  for (let i = 0; i < plasmaParams.length; i++) {
-    if (plasmaParams[i]["name"] === name)
-      return plasmaParams[i];
+  for (let i = 0; i < data.length; i++) {
+    if (data[i][fieldName] === match)
+      return data[i];
   }
   return null;
 }
 
-function ParamFromAlias(alias)
+function TabIdToAlias(id)
 {
-  for (let i = 0; i < plasmaParams.length; i++) {
-    if (plasmaParams[i]["alias"] === name)
-      return plasmaParams[i];
-  }
-  return null;
-}
-
-function DispRelFromName(name)
-{
-  for (let i = 0; i < dispRels.length; i++) {
-    if (dispRels[i]["name"] === name)
-      return dispRels[i];
-  }
-  return null;
+  return id.replace(TAB_ID_PREFIX, "");
 }
 
 /* Toggle between hiding and showing the dropdown content */
@@ -74,8 +61,7 @@ function FileChange(event)
   var filename = filepath.replace(/^.*[\\\/]/, '');
 
   var parameter = $(event.target).closest(".parameter");
-  var paramName = parameter.find(".paramName").text();
-  var paramInfo = ParamFromName(paramName);
+  var paramInfo = InfoFromField(plasmaParams, "alias", parameter.attr("id"));
   var paramFilename = parameter.find(".paramFilename");
 
   var checkedRadioDim = parameter.find(".paramDataType").find("input:checked");
@@ -125,8 +111,7 @@ function Load0D(paramInfo, valueStr)
 
 function ParamBoxReset(param)
 {
-  var paramName = param.find(".paramName").text();
-  var paramInfo = ParamFromName(paramName);
+  var paramInfo = InfoFromField(plasmaParams, "alias", param.attr("id"));
   cppmain.ClearParameter(paramInfo["alias"]);
 
   param.find(".paramDataValue").hide();
@@ -182,29 +167,24 @@ $(function() {
   });
 
   $(chromeTabsEl).on("activeTabChange", function(data) {
-    var tabEl = data.detail.tabEl;
-    var tabName = $(tabEl).find(".chrome-tab-title").text();
-    var paramInfo = ParamFromName(tabName);
+    var $tabEl = $(data.detail.tabEl);
+    var alias = TabIdToAlias($tabEl.attr("id"));
     $(".tab-page").each(function() { $(this).hide(); });
-    if (paramInfo === null)
-      $("#" + tabName).show();
-    else
-      $("#tab-" + paramInfo["alias"]).show();
+    $("#" + TAB_PAGE_PREFIX + alias).show();
   });
   $(chromeTabsEl).on("tabAdd", function(data) {
-    tabEl = data.detail.tabEl;
-    var tabName = $(tabEl).find(".chrome-tab-title").text();
+    var $tabEl = $(data.detail.tabEl);
+    var tabName = $tabEl.find(".chrome-tab-title").text();
     if (tabName === "PRINCE")
-      $(tabEl).find(".chrome-tab-close").remove();
+      $tabEl.find(".chrome-tab-close").remove();
   });
   $(chromeTabsEl).on("tabRemove", function(data) {
-    tabEl = data.detail.tabEl;
-    var tabName = $(tabEl).find(".chrome-tab-title").text();
-    var paramInfo = ParamFromName(tabName);
-    $("#tab-" + paramInfo["alias"]).remove();
+    var $tabEl = $(data.detail.tabEl);
+    var alias = TabIdToAlias($tabEl.attr("id"));
+    $("#" + TAB_PAGE_PREFIX + alias).remove();
   });
 
-  chromeTabs.addTab({title: "PRINCE"});
+  chromeTabs.addTab({title: "PRINCE"}, "prince");
 
   // Generate plasma parameter divs.
   var paramPrototype = $(".parameter");
@@ -213,7 +193,8 @@ $(function() {
     let clone = paramPrototype.clone(true);
     clone.attr("id", paramInfo["alias"]);
     clone.appendTo(paramPrototype.parent());
-    clone.find(".paramName").text(paramInfo["name"]);
+    clone.find(".paramName").text(paramInfo["name"]
+      + " (" + paramInfo["symbol"] + ")");
     // Assign different names to each parameter's radio groups.
     clone.find(".paramDataType").find("input").each(function() {
       if ($(this).attr("type") == "radio")
@@ -261,8 +242,7 @@ $(function() {
       var $paramValueField = $(this).parent().find(".paramValueField");
       $paramValueField.blur();
       var param = $(this).closest(".parameter");
-      var paramName = param.find(".paramName").text();
-      var paramInfo = ParamFromName(paramName);
+      var paramInfo = InfoFromField(plasmaParams, "alias", param.attr("id"));
       Load0D(paramInfo, $paramValueField.val());
     });
   });
@@ -273,7 +253,9 @@ $(function() {
     $button.appendTo($("#solverSettings"));
     $button.click(function(event) {
       var paramName = $(event.target).text();
-      console.log(paramName);
+      var paramInfo = InfoFromField(calcParams, "name", paramName);
+      cppmain.CalcParameter(paramInfo["alias"],
+        paramInfo["expr"], paramInfo["exprVars"]);
     });
   }
 });

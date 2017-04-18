@@ -3,8 +3,7 @@ const d3 = require("d3");
 function ParamPlot(event)
 {
   var parameter = $(event.target).closest(".parameter");
-  var paramName = parameter.find(".paramName").text();
-  var paramInfo = ParamFromName(paramName);
+  var paramInfo = InfoFromField(plasmaParams, "alias", parameter.attr("id"));
 
   // Try to get the data
   paramData = cppmain.GetParamData(paramInfo["alias"]);
@@ -15,12 +14,13 @@ function ParamPlot(event)
   }
 
   // Create new tab for figure, replace existing one if necessary.
-  var existingTab = chromeTabs.getTabByName(paramName);
+  var existingTab = chromeTabs.getTabByAlias(paramInfo["alias"]);
   if (existingTab != null)
     chromeTabs.removeTab(existingTab);
 
-  chromeTabs.addTab({title: paramName});
-  var $div = $("<div>", {id: "tab-" + paramInfo["alias"], "class": "tab-page"});
+  chromeTabs.addTab({title: paramInfo["name"]}, paramInfo["alias"]);
+  var $div = $("<div>", {id: TAB_PAGE_PREFIX + paramInfo["alias"],
+    "class": "tab-page"});
   $("body").append($div);
 
   if (paramData["dim"] == 1) {
@@ -43,7 +43,8 @@ function ParamPlot(event)
     // append the svg obgect to the tab page
     // appends a 'group' element to 'svg'
     // moves the 'group' element to the top left margin
-    var svg = d3.select("#tab-" + paramInfo["alias"]).append("svg")
+    var svg = d3.select("#" + TAB_PAGE_PREFIX + paramInfo["alias"])
+      .append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
       .append("g")
@@ -109,7 +110,8 @@ function ParamPlot(event)
       .attr("height", height)
     $dummyCanvas[0].getContext("2d").putImageData(imageData, 0, 0);
 
-    var canvas = d3.select("#tab-" + paramInfo["alias"]).append("canvas")
+    var canvas = d3.select("#" + TAB_PAGE_PREFIX + paramInfo["alias"])
+      .append("canvas")
       .attr("width", width * 10)
       .attr("height", height * 10)
       .attr("style", "margin-top: 20px; margin-left: 100px;");

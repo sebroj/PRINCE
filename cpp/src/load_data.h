@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 
 // Data point coordinate indicators.
 // The integer values matter, do NOT change them.
@@ -12,21 +13,23 @@ enum CoordType
   COORD_Z = 2
 };
 
-void clear_data(const char* alias);
+void ClearData(const char* alias);
 
-bool load_data(
+bool LoadData(
   const char* alias, const char* path,
   int dim, CoordType coordTypes[2]);
-bool load_data(
+bool LoadData(
   const char* alias, const char* valueStr);
 
-bool calculate(const char* alias, const char* expr);
+bool Calculate(
+  const char* alias,
+  const char* expr, std::vector<std::string> exprVars);
 
-const std::vector<std::vector<double>>* get_points(const char* alias);
+const std::vector<std::vector<double>>* GetPoints(const char* alias);
 
-const std::vector<double>* get_values(const char* alias);
+const std::vector<double>* GetValues(const char* alias);
 
-void to_regular_grid(
+void ToRegularGrid(
   const std::vector<std::vector<double>>& points,
   const std::vector<double>& values,
   std::vector<double>& out_values);

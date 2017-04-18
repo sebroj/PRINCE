@@ -36,7 +36,9 @@ const tabTemplate = `
   </div>
 `
 
-let instanceId = 0
+let instanceId = 0;
+let TAB_ID_PREFIX = "tab-";
+let TAB_PAGE_PREFIX = "tab-page-";
 
 $(function() {
   var $window = $(window);
@@ -188,23 +190,38 @@ class ChromeTabs
 
     return matchEl;
   }
-
-  addTab(tabProperties)
+  getTabByAlias(alias)
   {
+    var matchEl = null;
+
+    this.tabEls.forEach(function(tabEl) {
+      if ($(tabEl).attr("id") === (TAB_ID_PREFIX + alias))
+        matchEl = tabEl;
+    });
+
+    return matchEl;
+  }
+
+  addTab(tabProperties, alias)
+  {
+    if (alias === undefined || alias === null)
+      throw "ERROR (DBG): Attempted to create a tab with no alias!";
+
     const defaultTabProperties = {
       title: '',
       favicon: ''
-    }
-    const tabEl = this.createNewTabEl()
+    };
+    const tabEl = this.createNewTabEl();
+    $(tabEl).attr("id", TAB_ID_PREFIX + alias);
 
-    tabProperties = Object.assign({}, defaultTabProperties, tabProperties)
-    this.tabContentEl.appendChild(tabEl)
-    this.updateTab(tabEl, tabProperties)
-    this.emit('tabAdd', { tabEl })
-    this.setCurrentTab(tabEl)
-    this.layoutTabs()
-    this.fixZIndexes()
-    this.setupDraggabilly()
+    tabProperties = Object.assign({}, defaultTabProperties, tabProperties);
+    this.tabContentEl.appendChild(tabEl);
+    this.updateTab(tabEl, tabProperties);
+    this.emit('tabAdd', { tabEl });
+    this.setCurrentTab(tabEl);
+    this.layoutTabs();
+    this.fixZIndexes();
+    this.setupDraggabilly();
   }
 
   setCurrentTab(tabEl)

@@ -5,6 +5,17 @@ let constants = [];
 let calcParams = [];
 // ===================================================
 
+function CheckNoDuplicates(data, fieldStr)
+{
+  for (let i = 0; i < data.length; i++) {
+    for (let j = i + 1; j < data.length; j++) {
+      if (data[i][fieldStr] === data[j][fieldStr])
+        // TODO make a DEBUG_error type thing for this
+        throw "ERROR (DBG): Duplicate " + fieldStr + " - " + data[i][fieldStr];
+    }
+  }
+}
+
 function LoadFormats(filePath)
 {
   var fs = require("fs");
@@ -17,35 +28,14 @@ function LoadFormats(filePath)
   calcParams = formats["CalculatedParameters"];
 
   // Check all formats.json data for correctness
-  // - Duplicate parameter names/aliases.
-  for (let i = 0; i < plasmaParams.length; i++) {
-    for (let j = i + 1; j < plasmaParams.length; j++) {
-      if (plasmaParams[i]["name"] === plasmaParams[j]["name"])
-        // TODO make a DEBUG_error type thing for this
-        throw "ERROR (DBG): Duplicate plasma parameter name - "
-          + plasmaParams[i]["name"];
-      if (plasmaParams[i]["alias"] === plasmaParams[j]["alias"])
-        throw "ERROR (DBG): Duplicate plasma parameter alias - "
-          + plasmaParams[i]["alias"];
-    }
-  }
-  // - Duplicate dispersion relation names.
-  for (let i = 0; i < dispRels.length; i++) {
-    for (let j = i + 1; j < dispRels.length; j++) {
-      if (dispRels[i]["name"] === dispRels[j]["name"])
-        // TODO make a DEBUG_error type thing for this
-        throw "ERROR (DBG): Duplicate dispersion relation name - "
-          + dispRels[i]["name"];
-    }
-  }
-  // - Duplicate constant names.
-  for (let i = 0; i < constants.length; i++) {
-    for (let j = i + 1; j < constants.length; j++) {
-      if (constants[i]["name"] === constants[j]["name"])
-        // TODO make a DEBUG_error type thing for this
-        throw "ERROR (DBG): Duplicate constant name - " + constants[i]["name"];
-    }
-  }
+  // - Duplicate names/aliases within each category.
+  CheckNoDuplicates(plasmaParams, "name");
+  CheckNoDuplicates(plasmaParams, "alias");
+  CheckNoDuplicates(dispRels, "name");
+  CheckNoDuplicates(constants, "name");
+  CheckNoDuplicates(constants, "alias");
+  CheckNoDuplicates(calcParams, "name");
+  CheckNoDuplicates(calcParams, "alias");
   // - Existence of dispersion relation required parameters.
   for (let i = 0; i < dispRels.length; i++) {
     var dispRel = dispRels[i];
@@ -61,7 +51,32 @@ function LoadFormats(filePath)
       if (!exists) {
         // TODO make a DEBUG_error type thing for this
         throw "ERROR (DBG): " + dispRel["name"]
-          + " requires non-existent parameter: " + dispRel["req"][j];
+          + " requires non-existent parameter: " + req;
+      }
+    }
+  }
+  // - Existence of calculated parameter expression variables.
+  for (let i = 0; i < calcParams.length; i++) {
+    var calcParam = calcParams[i];
+    for (let j = 0; j < calcParam["exprVars"].length; j++) {
+      var exprVar = calcParam["exprVars"][j];
+      var exists = false;
+      for (let k = 0; k < plasmaParams.length; k++) {
+        if (exprVar === plasmaParams[k]["alias"]) {
+          exists = true;
+          break;
+        }
+      }
+      for (let k = 0; k < constants.length; k++) {
+        if (exprVar === constants[k]["alias"]) {
+          exists = true;
+          break;
+        }
+      }
+      if (!exists) {
+        // TODO make a DEBUG_error type thing for this
+        throw "ERROR (DBG): " + calcParam["name"]
+          + " expression uses non-existent alias: " + exprVar;
       }
     }
   }

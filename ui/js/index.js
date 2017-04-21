@@ -109,43 +109,44 @@ function Load0D(paramInfo, valueStr)
   cppmain.LoadParameter(paramInfo["alias"], valueStr, 0, [-1, -1]);
 }
 
-function ParamBoxReset(param)
+// TODO don't reset param if dimension is unchanged
+function ParamBoxReset($param)
 {
-  var paramInfo = InfoFromField(plasmaParams, "alias", param.attr("id"));
+  var paramInfo = InfoFromField(plasmaParams, "alias", $param.attr("id"));
   cppmain.ClearParameter(paramInfo["alias"]);
 
-  param.find(".paramDataValue").hide();
-  param.find(".format1D").hide();
-  param.find(".format2D").hide();
-  param.find(".paramDataFile").hide();
-  param.find(".paramFilename").text("No file selected");
-  param.find(".paramPlot").hide();
+  $param.find(".paramDataValue").hide();
+  $param.find(".format1D").hide();
+  $param.find(".format2D").hide();
+  $param.find(".paramDataFile").hide();
+  $param.find(".paramFilename").text("No file selected");
+  $param.find(".paramPlot").hide();
 }
 
 function Param0D(event)
 {
-  var param = $(event.target).closest(".parameter");
-  ParamBoxReset(param);
+  var $param = $(event.target).closest(".parameter");
+  ParamBoxReset($param);
 
-  param.find(".paramDataValue").show();
+  $param.find(".paramDataValue").show();
 }
 function Param1D(event)
 {
-  var param = $(event.target).closest(".parameter");
-  ParamBoxReset(param);
+  var $param = $(event.target).closest(".parameter");
+  ParamBoxReset($param);
 
-  param.find(".format1D").show();
-  param.find(".paramDataFile").show();
-  param.find(".paramPlot").show();
+  $param.find(".format1D").show();
+  $param.find(".paramDataFile").show();
+  $param.find(".paramPlot").show();
 }
 function Param2D(event)
 {
-  var param = $(event.target).closest(".parameter");
-  ParamBoxReset(param);
+  var $param = $(event.target).closest(".parameter");
+  ParamBoxReset($param);
 
-  param.find(".format2D").show();
-  param.find(".paramDataFile").show();
-  param.find(".paramPlot").show();
+  $param.find(".format2D").show();
+  $param.find(".paramDataFile").show();
+  $param.find(".paramPlot").show();
 }
 
 $(function() {

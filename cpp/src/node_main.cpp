@@ -88,7 +88,7 @@ NAN_METHOD(LoadParameter)
   StringConv alias(cbInfo[0]);
   StringConv arg2(cbInfo[1]);
   int dataDim = Nan::To<int>(cbInfo[2]).FromJust();
-  CoordType coordTypes[2] = { (CoordType)a0, (CoordType)a1 };
+  std::array<CoordType, 2> coordTypes = { (CoordType)a0, (CoordType)a1 };
 
   bool success = false;
   if (dataDim == 0)

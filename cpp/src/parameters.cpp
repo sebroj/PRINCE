@@ -1,11 +1,7 @@
 #include "parameters.h"
 
 #include <cstdio>
-#include <vector>
-
-#include <string>
 #include <map>
-#include <array>
 
 #include "node_main.h"
 #include "extern/tinyexpr/tinyexpr.h"
@@ -15,47 +11,18 @@
 
 class ParameterRaw
 {
-  CoordType coordTypes[2];
+public:
+  int dim;
+  std::array<CoordType, 2> coordTypes;
   std::vector<std::vector<double>> points;
   std::vector<double> values;
 
-public:
-  ParameterRaw() {}
-
   ParameterRaw(
-    CoordType coordTypes[2],
+    int dim, std::array<CoordType, 2> coordTypes,
     const std::vector<std::vector<double>>& points,
     const std::vector<double>& values)
+    : dim(dim), coordTypes(coordTypes), points(points), values(values)
   {
-    this->coordTypes[0] = coordTypes[0];
-    this->coordTypes[1] = coordTypes[1];
-    this->points = points;
-    this->values = values;
-  }
-
-  int Dimension() const
-  {
-    if (!is_set())
-      return -1;
-
-    if (values.size() == 1)
-      return 0;
-    else
-      return (int)points[0].size();
-  }
-
-  bool is_set() const
-  {
-    return !values.empty();
-  }
-
-  const std::vector<std::vector<double>>* get_points() const
-  {
-    return &points;
-  }
-  const std::vector<double>* get_values() const
-  {
-    return &values;
   }
 };
 std::map<std::string, ParameterRaw> rawParams;
@@ -63,22 +30,23 @@ std::map<std::string, ParameterRaw> rawParams;
 // Stores information regarding the state of all plasma parameters.
 class ParameterLinker
 {
-  bool match;
+public:
+  bool valid;
+  std::map<std::string, std::vector<int>> indexMaps;
+  std::vector<std::vector<double>> points;
 
   // Have some sort of mapping here for params of different dimensions?
 
-public:
   ParameterLinker()
+    : valid(false)
   {
-    match = false;
   }
 
   int MaxDimension()
   {
     int maxDim = 0;
-    for (const auto& entry : rawParams)
-    {
-      int dim = entry.second.Dimension();
+    for (const auto& it : rawParams) {
+      int dim = it.second.dim;
       if (dim > maxDim)
         maxDim = dim;
     }
@@ -88,7 +56,83 @@ public:
 
   void Update()
   {
-    // Go through all rawParams, check they all match, set match flag.
+    valid = false;
+    indexMaps.clear();
+    points.clear();
+
+    int maxDim = MaxDimension();
+    if (maxDim == 0) {
+      for (const auto& it : rawParams)
+        indexMaps.insert(decltype(indexMaps)::value_type(it.first, { 0 }));
+    }
+    else if (maxDim == 1) {
+      // trickiest
+      return;
+    }
+    else if (maxDim == 2) {
+      std::array<CoordType, 2> coordTypes = { COORD_NONE, COORD_NONE };
+      for (const auto& it : rawParams) {
+        const char* alias = it.first.c_str();
+        const ParameterRaw& param = it.second;
+        if (param.dim == 2) {
+          if (points.empty()) {
+            coordTypes = param.coordTypes;
+            points = param.points;
+          }
+          else {
+            if (coordTypes != param.coordTypes) {
+              printf("ERROR (USR @ %s): coord type mismatch\n", alias);
+              return;
+            }
+            else if (points != param.points) {
+              printf("ERROR (USR @ %s): data points mismatch\n", alias);
+              return;
+            }
+            else {
+              std::vector<int> indexMap(points.size());
+              for (int i = 0; i < (int)indexMap.size(); i++) {
+                indexMap[i] = i;
+              }
+              indexMaps.insert(decltype(indexMaps)::value_type(alias, indexMap));
+            }
+          }
+        }
+      }
+      for (const auto& it : rawParams) {
+        const char* alias = it.first.c_str();
+        const ParameterRaw& param = it.second;
+        if (param.dim == 1) {
+          // TODO work in progress! this doesn't work yet
+          if (param.coordTypes[0] == coordTypes[0]) {
+            // check first coordinate matches all points
+            // if it does:
+            std::vector<int> indexMap(points.size());
+            // TODO copied from node_main.cpp. centralize??
+            /*int ptsHeight = 0;
+            double first1 = points[0][0];
+            while (points[++ptsHeight][0] == first1) {}
+            int ptsWidth = (int)points.size() / ptsHeight;*/
+            indexMaps.insert(decltype(indexMaps)::value_type(alias, indexMap));
+          }
+          else if (param.coordTypes[0] == coordTypes[1]) {
+            // check second coordinate matches all points
+            // if it does:
+            std::vector<int> indexMap(points.size());
+            indexMaps.insert(decltype(indexMaps)::value_type(alias, indexMap));
+          }
+          else {
+            printf("ERROR (USR @ %s): coord type mismatch\n", alias);
+            return;
+          }
+        }
+        else if (param.dim == 0) {
+          std::vector<int> indexMap(points.size(), 0);
+          indexMaps.insert(decltype(indexMaps)::value_type(alias, indexMap));
+        }
+      }
+    }
+
+    valid = true;
   }
 };
 ParameterLinker paramLinker;
@@ -155,6 +199,19 @@ static bool CompareData(
   return d1[0] < d2[0];
 }
 
+static void InsertOrReplaceRawParam(
+  const char* alias,
+  const ParameterRaw& rawParam)
+{
+  const auto& it = rawParams.find(alias);
+  if (it != rawParams.end())
+    it->second = rawParam;
+  else
+    rawParams.insert(decltype(rawParams)::value_type(alias, rawParam));
+
+  paramLinker.Update();
+}
+
 void ClearData(const char* alias)
 {
   printf("DBG: parameter: %s\n", alias);
@@ -162,16 +219,18 @@ void ClearData(const char* alias)
 
   if (rawParams.find(alias) != rawParams.end())
     rawParams.erase(alias);
+
+  paramLinker.Update();
 }
 
 bool LoadData(
   const char* alias, const char* path,
-  int dim, CoordType coordTypes[2])
+  int dim, std::array<CoordType, 2> coordTypes)
 {
   const int BUF_SIZE = 256;
 
   printf("DBG: parameter: %s\n", alias);
-  printf("     dimension: %d-D\n", dim);
+  printf("     dimension: %d\n", dim);
   printf("     coords:    %d, %d\n", coordTypes[0], coordTypes[1]);
   printf("     filepath:  %s\n", path);
   FILE* fp = fopen(path, "r");
@@ -186,13 +245,13 @@ bool LoadData(
     char* trimmed = TrimWhitespace(buf);
     std::vector<double> lineData = ReadLineDoubles(trimmed);
     if (lineData.empty()) {
-      printf("ERROR (USR): unable to read line %d\n", lineNumber);
+      printf("ERROR (USR @ %s): unable to read line %d\n", alias, lineNumber);
       return false;
     }
     if ((int)lineData.size() != dim + 1) {
-      printf("    LINE ERROR (USR): Read %d values, expected %d.\n",
-        (int)lineData.size(), dim + 1);
-      printf("ERROR (USR): unable to read line %d\n", lineNumber);
+      printf("    LINE ERROR (USR @ %s): Read %d values, expected %d.\n",
+        alias, (int)lineData.size(), dim + 1);
+      printf("ERROR (USR @ %s): unable to read line %d\n", alias, lineNumber);
       return false;
     }
 
@@ -204,8 +263,6 @@ bool LoadData(
   std::sort(std::begin(data), std::end(data), CompareData);
 
   // TODO check if data points are complete (for 2D grid)
-  // example implementation: for every data point, reverse (x, y) coords,
-  // insert these to new list, sort this list, then check if newList == dataPts
 
   // Separate data into points and values.
   std::vector<std::vector<double>> points;
@@ -219,10 +276,8 @@ bool LoadData(
     values.push_back(d[dim]);
   }
 
-  ParameterRaw parameterRaw(coordTypes, points, values);
-  rawParams[alias] = parameterRaw;
-
-  printf("DBG: dimension is %d\n", rawParams[alias].Dimension());
+  ParameterRaw rawParam(dim, coordTypes, points, values);
+  InsertOrReplaceRawParam(alias, rawParam);
 
   return true;
 }
@@ -230,22 +285,21 @@ bool LoadData(
 bool LoadData(const char* alias, const char* valueStr)
 {
   printf("DBG: parameter: %s\n", alias);
-  printf("     dimension: 0-D\n");
+  printf("     dimension: 0\n");
   printf("     coords:    -1, -1\n");
   printf("     value string: %s\n", valueStr);
 
   char* endptr = (char*)valueStr;
   double value = strtod(valueStr, &endptr);
   if (endptr == valueStr || *endptr != '\0') {
-    printf("ERROR (USR): Malformed number \"%s\"\n", valueStr);
+    printf("ERROR (USR @ %s): Malformed number \"%s\"\n", alias, valueStr);
     return false;
   }
-  std::vector<double> values = {value};
-  CoordType coordTypes[2] = { COORD_NONE, COORD_NONE };
-  ParameterRaw parameterRaw(coordTypes, std::vector<std::vector<double>>(), values);
-  rawParams[alias] = parameterRaw;
 
-  printf("DBG: dimension is %d\n", rawParams[alias].Dimension());
+  std::vector<std::vector<double>> emptyPoints;
+  std::vector<double> values = { value };
+  ParameterRaw rawParam(0, { COORD_NONE, COORD_NONE }, emptyPoints, values);
+  InsertOrReplaceRawParam(alias, rawParam);
 
   return true;
 }
@@ -263,30 +317,66 @@ bool Calculate(
 
   for (std::string var : exprVars) {
     if (rawParams.find(var) == rawParams.end()) {
-      printf("ERROR (USR): parameter %s not loaded\n", var.c_str());
+      printf("ERROR (USR %s): parameter not loaded\n", var.c_str());
       return false;
     }
   }
+  if (!paramLinker.valid) {
+    printf("ERROR (USR): parameters not linked\n");
+    return false;
+  }
 
-  int maxDim = paramLinker.MaxDimension();
-  printf("DBG: max dimension is %d", maxDim);
+  // TODO: not working
+#if 0
+  te_variable* vars = new te_variable[exprVars.size()];
+  double* varValues = new double[exprVars.size()];
+  for (int i = 0; i < (int)exprVars.size(); i++) {
+    vars[i].name = exprVars[i].c_str();
+    vars[i].address = &varValues[i];
+    printf("var: %s\n", vars[i].name);
+  }
+  int error;
+  te_expr* expression = te_compile(expr, vars, (int)exprVars.size(), &error);
+  if (!expression) {
+    DEBUGError("failed to compile expression %s, error code %d", expr, error);
+    return false;
+  }
+  printf("expression error: %d\n", error);
+
+  std::vector<double> values(paramLinker.points.size());
+  for (int p = 0; p < paramLinker.points.size(); p++) {
+    // TODO this is TOTALLY inefficient. memory access all over the place
+    for (int v = 0; v < (int)exprVars.size(); v++) {
+      const ParameterRaw& param = rawParams.find(exprVars[v])->second;
+      const std::vector<int>& indexMap =
+        paramLinker.indexMaps.find(exprVars[v])->second;
+      varValues[v] = param.values[indexMap[p]];
+    }
+    //values[i] = te_eval()
+  }
+  //te_free(expression);
+  delete[] varValues;
+  delete[] vars;
+#endif
 
   return true;
 }
 
 const std::vector<std::vector<double>>* GetPoints(const char* alias)
 {
-  if (!rawParams[alias].is_set())
+  const auto& it = rawParams.find(alias);
+  if (it == rawParams.end())
     return nullptr;
 
-  return rawParams[alias].get_points();
+  return &(it->second.points);
 }
 const std::vector<double>* GetValues(const char* alias)
 {
-  if (!rawParams[alias].is_set())
+  const auto& it = rawParams.find(alias);
+  if (it == rawParams.end())
     return nullptr;
 
-  return rawParams[alias].get_values();
+  return &(it->second.values);
 }
 
 void ToRegularGrid(

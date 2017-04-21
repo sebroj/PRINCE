@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <array>
 
 // Data point coordinate indicators.
 // The integer values matter, do NOT change them.
@@ -17,7 +18,7 @@ void ClearData(const char* alias);
 
 bool LoadData(
   const char* alias, const char* path,
-  int dim, CoordType coordTypes[2]);
+  int dim, std::array<CoordType, 2> coordTypes);
 bool LoadData(const char* alias, const char* valueStr);
 
 bool Calculate(

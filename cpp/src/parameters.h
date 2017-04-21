@@ -18,8 +18,7 @@ void ClearData(const char* alias);
 bool LoadData(
   const char* alias, const char* path,
   int dim, CoordType coordTypes[2]);
-bool LoadData(
-  const char* alias, const char* valueStr);
+bool LoadData(const char* alias, const char* valueStr);
 
 bool Calculate(
   const char* alias,

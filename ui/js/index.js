@@ -122,7 +122,6 @@ function ParamBoxReset(param)
   param.find(".paramPlot").hide();
 }
 
-// TODO factor 0-D, 1-D, and 2-D param UI elements into one div?
 function Param0D(event)
 {
   var param = $(event.target).closest(".parameter");

@@ -1,4 +1,4 @@
-#include "load_data.h"
+#include "parameters.h"
 
 #include <cstdio>
 #include <vector>
@@ -12,29 +12,6 @@
 
 // TODO all user errors have been labeled as "ERROR (USR): message"
 // centralize this logging system. Messages will be improved in future revision.
-
-class Param
-{
-};
-
-// Stores information regarding the state of all plasma parameters.
-class ParamLinker
-{
-  bool match;
-
-  // Have some sort of mapping here for params of different dimensions?
-
-public:
-  ParamLinker()
-  {
-    match = false;
-  }
-
-  void update()
-  {
-    // Go through all rawParams, check they all match, set match flag.
-  }
-};
 
 class ParameterRaw
 {
@@ -56,23 +33,65 @@ public:
     this->values = values;
   }
 
-  bool is_set()
+  int Dimension() const
   {
-    return !points.empty();
+    if (!is_set())
+      return -1;
+
+    if (values.size() == 1)
+      return 0;
+    else
+      return (int)points[0].size();
   }
 
-  const std::vector<std::vector<double>>* get_points()
+  bool is_set() const
+  {
+    return !values.empty();
+  }
+
+  const std::vector<std::vector<double>>* get_points() const
   {
     return &points;
   }
-  const std::vector<double>* get_values()
+  const std::vector<double>* get_values() const
   {
     return &values;
   }
 };
-
-ParamLinker paramLinker;
 std::map<std::string, ParameterRaw> rawParams;
+
+// Stores information regarding the state of all plasma parameters.
+class ParameterLinker
+{
+  bool match;
+
+  // Have some sort of mapping here for params of different dimensions?
+
+public:
+  ParameterLinker()
+  {
+    match = false;
+  }
+
+  int MaxDimension()
+  {
+    int maxDim = 0;
+    for (const auto& entry : rawParams)
+    {
+      int dim = entry.second.Dimension();
+      if (dim > maxDim)
+        maxDim = dim;
+    }
+
+    return maxDim;
+  }
+
+  void Update()
+  {
+    // Go through all rawParams, check they all match, set match flag.
+  }
+};
+ParameterLinker paramLinker;
 
 // Trim leading and trailing whitespace from str IN PLACE.
 // Return a null-terminated substring of str with trimmed whitespace.
@@ -141,8 +160,8 @@ void ClearData(const char* alias)
   printf("DBG: parameter: %s\n", alias);
   printf("     data cleared\n");
 
-  ParameterRaw paramRaw;
-  rawParams[alias] = paramRaw;
+  if (rawParams.find(alias) != rawParams.end())
+    rawParams.erase(alias);
 }
 
 bool LoadData(
@@ -203,6 +222,8 @@ bool LoadData(
   ParameterRaw parameterRaw(coordTypes, points, values);
   rawParams[alias] = parameterRaw;
 
+  printf("DBG: dimension is %d\n", rawParams[alias].Dimension());
+
   return true;
 }
 
@@ -213,9 +234,20 @@ bool LoadData(const char* alias, const char* valueStr)
   printf("     coords:    -1, -1\n");
   printf("     value string: %s\n", valueStr);
 
-  // TODO load 0-D parameter
+  char* endptr = (char*)valueStr;
+  double value = strtod(valueStr, &endptr);
+  if (endptr == valueStr || *endptr != '\0') {
+    printf("ERROR (USR): Malformed number \"%s\"\n", valueStr);
+    return false;
+  }
+  std::vector<double> values = {value};
+  CoordType coordTypes[2] = { COORD_NONE, COORD_NONE };
+  ParameterRaw parameterRaw(coordTypes, std::vector<std::vector<double>>(), values);
+  rawParams[alias] = parameterRaw;
 
-  return false;
+  printf("DBG: dimension is %d\n", rawParams[alias].Dimension());
+
+  return true;
 }
 
 bool Calculate(
@@ -235,6 +267,9 @@ bool Calculate(
       return false;
     }
   }
+
+  int maxDim = paramLinker.MaxDimension();
+  printf("DBG: max dimension is %d", maxDim);
 
   return true;
 }

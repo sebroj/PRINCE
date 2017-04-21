@@ -4,7 +4,7 @@
             "target_name": "main",
             "sources": [
                 "src/node_main.cpp",
-                "src/load_data.cpp",
+                "src/parameters.cpp",
                 "src/extern/tinyexpr/tinyexpr.c"
             ],
             "include_dirs": [

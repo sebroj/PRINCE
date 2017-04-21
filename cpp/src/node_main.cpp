@@ -11,7 +11,7 @@
 
 #include <vector>
 
-#include "load_data.h"
+#include "parameters.h"
 
 using namespace Nan;
 
@@ -191,14 +191,27 @@ NAN_METHOD(Setup)
 {
   const FunctionCallbackInfo<v8::Value> &cbInfo = info;
   std::vector<ValueTypes> cbInfoTypes(
-    { VALUE_OBJ, VALUE_OBJ, VALUE_OBJ, VALUE_OBJ });
+    { VALUE_ARRAY, VALUE_ARRAY, VALUE_ARRAY, VALUE_ARRAY });
   if (!VerifyCbInfo(__FUNCTION__, cbInfo, cbInfoTypes))
     return;
 
-  Local<v8::Object> plasmaParams = Nan::To<v8::Object>(cbInfo[0]).ToLocalChecked();
-  Local<v8::Object> dispRels = Nan::To<v8::Object>(cbInfo[1]).ToLocalChecked();
-  Local<v8::Object> constants = Nan::To<v8::Object>(cbInfo[2]).ToLocalChecked();
-  Local<v8::Object> calcParams = Nan::To<v8::Object>(cbInfo[3]).ToLocalChecked();
+  Local<v8::Array> plasmaParams = cbInfo[0].As<v8::Array>();
+  Local<v8::Array> dispRels = cbInfo[1].As<v8::Array>();
+  Local<v8::Array> constants = cbInfo[2].As<v8::Array>();
+  Local<v8::Array> calcParams = cbInfo[3].As<v8::Array>();
+
+  for (int i = 0; i < (int)constants->Length(); i++)
+  {
+    Local<v8::Object> constant = Nan::To<v8::Object>(
+      Nan::Get(constants, i).ToLocalChecked()).ToLocalChecked();
+    Local<v8::String> aliasKey = New<v8::String>("alias").ToLocalChecked();
+    Local<v8::String> valueKey = New<v8::String>("value").ToLocalChecked();
+    StringConv alias(Nan::Get(constant, aliasKey).ToLocalChecked());
+    StringConv value(Nan::Get(constant, valueKey).ToLocalChecked());
+
+    if (!LoadData(alias.c_str(), value.c_str()))
+      DEBUGError("couldn't import constant #%d", i);
+  }
 }
 
 static bool VerifyCbInfo(

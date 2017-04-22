@@ -1,9 +1,9 @@
 const d3 = require("d3");
 
-function ParamPlot(event)
+function ParamPlot(paramInfo)
 {
-  var parameter = $(event.target).closest(".parameter");
-  var paramInfo = InfoFromField(plasmaParams, "alias", parameter.attr("id"));
+  /*var $param = $(event.target).closest(".parameter");
+  var paramInfo = InfoFromField(plasmaParams, "alias", $param.attr("id"));*/
 
   // Try to get the data
   paramData = cppmain.GetParamData(paramInfo["alias"]);

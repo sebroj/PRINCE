@@ -117,8 +117,8 @@ void te_free(te_expr *n) {
 }
 
 
-static double pi() {return 3.14159265358979323846;}
-static double e() {return 2.71828182845904523536;}
+//static double pi() {return 3.14159265358979323846;}
+//static double e() {return 2.71828182845904523536;}
 static double fac(double a) {/* simplest version of fac */
     if (a < 0.0)
         return NAN;
@@ -159,7 +159,7 @@ static const te_variable functions[] = {
     {"ceil", ceil,    TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"cos", cos,      TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"cosh", cosh,    TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"e", e,          TE_FUNCTION0 | TE_FLAG_PURE, 0},
+    //{"e", e,          TE_FUNCTION0 | TE_FLAG_PURE, 0},
     {"exp", exp,      TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"fac", fac,      TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"floor", floor,  TE_FUNCTION1 | TE_FLAG_PURE, 0},
@@ -172,7 +172,7 @@ static const te_variable functions[] = {
     {"log10", log10,  TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"ncr", ncr,      TE_FUNCTION2 | TE_FLAG_PURE, 0},
     {"npr", npr,      TE_FUNCTION2 | TE_FLAG_PURE, 0},
-    {"pi", pi,        TE_FUNCTION0 | TE_FLAG_PURE, 0},
+    //{"pi", pi,        TE_FUNCTION0 | TE_FLAG_PURE, 0},
     {"pow", pow,      TE_FUNCTION2 | TE_FLAG_PURE, 0},
     {"sin", sin,      TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"sinh", sinh,    TE_FUNCTION1 | TE_FLAG_PURE, 0},
@@ -242,7 +242,9 @@ void next_token(state *s) {
             s->type = TOK_NUMBER;
         } else {
             /* Look for a variable or builtin function call. */
-            if (s->next[0] >= 'a' && s->next[0] <= 'z') {
+            /* NOTE hacked this to accept upper case */
+            if ((s->next[0] >= 'a' && s->next[0] <= 'z')
+              || (s->next[0] >= 'A' && s->next[0] <= 'Z')) {
                 const char *start;
                 start = s->next;
                 while ((s->next[0] >= 'a' && s->next[0] <= 'z') || (s->next[0] >= '0' && s->next[0] <= '9') || (s->next[0] == '_')) s->next++;

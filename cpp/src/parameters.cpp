@@ -32,6 +32,8 @@ class ParameterLinker
 {
 public:
   bool valid;
+  int maxDim;
+  std::array<CoordType, 2> coordTypes;
   std::map<std::string, std::vector<int>> indexMaps;
   std::vector<std::vector<double>> points;
 
@@ -44,23 +46,24 @@ public:
 
   int MaxDimension()
   {
-    int maxDim = 0;
+    int maxDimension = 0;
     for (const auto& it : rawParams) {
       int dim = it.second.dim;
-      if (dim > maxDim)
-        maxDim = dim;
+      if (dim > maxDimension)
+        maxDimension = dim;
     }
 
-    return maxDim;
+    return maxDimension;
   }
 
   void Update()
   {
     valid = false;
+    maxDim = MaxDimension();
+    coordTypes = { COORD_NONE, COORD_NONE };
     indexMaps.clear();
     points.clear();
 
-    int maxDim = MaxDimension();
     if (maxDim == 0) {
       for (const auto& it : rawParams)
         indexMaps.insert(decltype(indexMaps)::value_type(it.first, { 0 }));
@@ -70,14 +73,19 @@ public:
       return;
     }
     else if (maxDim == 2) {
-      std::array<CoordType, 2> coordTypes = { COORD_NONE, COORD_NONE };
       for (const auto& it : rawParams) {
+        // First pass: only scan through the 2-dimensional parameters
         const char* alias = it.first.c_str();
         const ParameterRaw& param = it.second;
         if (param.dim == 2) {
           if (points.empty()) {
             coordTypes = param.coordTypes;
             points = param.points;
+            std::vector<int> indexMap(points.size());
+            for (int i = 0; i < (int)indexMap.size(); i++) {
+              indexMap[i] = i;
+            }
+            indexMaps.insert(decltype(indexMaps)::value_type(alias, indexMap));
           }
           else {
             if (coordTypes != param.coordTypes) {
@@ -99,6 +107,7 @@ public:
         }
       }
       for (const auto& it : rawParams) {
+        // Second pass: scan through 1-D and 0-D parameters
         const char* alias = it.first.c_str();
         const ParameterRaw& param = it.second;
         if (param.dim == 1) {
@@ -317,7 +326,7 @@ bool Calculate(
 
   for (std::string var : exprVars) {
     if (rawParams.find(var) == rawParams.end()) {
-      printf("ERROR (USR %s): parameter not loaded\n", var.c_str());
+      printf("ERROR (USR @ %s): parameter not loaded\n", var.c_str());
       return false;
     }
   }
@@ -326,22 +335,25 @@ bool Calculate(
     return false;
   }
 
-  // TODO: not working
-#if 0
-  te_variable* vars = new te_variable[exprVars.size()];
   double* varValues = new double[exprVars.size()];
+  te_variable* vars = new te_variable[exprVars.size()];
   for (int i = 0; i < (int)exprVars.size(); i++) {
     vars[i].name = exprVars[i].c_str();
-    vars[i].address = &varValues[i];
-    printf("var: %s\n", vars[i].name);
+    vars[i].address = varValues + i;
+    vars[i].type = TE_VARIABLE;
+    vars[i].context = 0;
+    printf("var, NAME %s, addr %p, type %d\n", vars[i].name, vars[i].address, vars[i].type);
   }
   int error;
   te_expr* expression = te_compile(expr, vars, (int)exprVars.size(), &error);
   if (!expression) {
-    DEBUGError("failed to compile expression %s, error code %d", expr, error);
+    DEBUGError("failed to compile expression %s, error at %d", expr, error);
     return false;
   }
-  printf("expression error: %d\n", error);
+  else if (error != 0) {
+    DEBUGError("expression %s compiled, but non-zero error %d", expr, error);
+    return false;
+  }
 
   std::vector<double> values(paramLinker.points.size());
   for (int p = 0; p < paramLinker.points.size(); p++) {
@@ -352,12 +364,15 @@ bool Calculate(
         paramLinker.indexMaps.find(exprVars[v])->second;
       varValues[v] = param.values[indexMap[p]];
     }
-    //values[i] = te_eval()
+    values[p] = te_eval(expression);
   }
-  //te_free(expression);
+  te_free(expression);
   delete[] varValues;
   delete[] vars;
-#endif
+
+  ParameterRaw rawParam(paramLinker.maxDim, paramLinker.coordTypes,
+    paramLinker.points, values);
+  InsertOrReplaceRawParam(alias, rawParam);
 
   return true;
 }

@@ -126,7 +126,7 @@
       "symbol": "\\omega_{p, \\text{e}}",
       "alias": "wpe",
       "formula": "\\sqrt{\\nicefrac{e^2n_\\text{e}}{\\epsilon_0m_\\text{e}}}",
-      "expr": "sqrt( ((e)^2 * ne) / (eps0 * me) )",
+      "expr": "sqrt((e^2 * ne) / (eps0 * me))",
       "exprVars": [ "e", "ne", "eps0", "me" ]
     },
     {

@@ -29,11 +29,18 @@ function ToggleDropdown()
   $("#dispDropdown").toggle();
 }
 
+function ParamPlotButton(event)
+{
+  var $param = $(event.target).closest(".parameter");
+  var paramInfo = InfoFromField(plasmaParams, "alias", $param.attr("id"));
+  ParamPlot(paramInfo);
+}
+
 /* Dispersion relation has been selected. */
 function DispSelect(event)
 {
   var dispRelName = $(event.target).text();
-  var dispRelInfo = DispRelFromName(dispRelName);
+  var dispRelInfo = InfoFromField(dispRels, "name", dispRelName);
 
   // Update dropdown button text.
   $("#dropdownButton").text(dispRelName);
@@ -230,7 +237,7 @@ $(function() {
 
   $(".dispButton").each(function() { $(this).click(DispSelect); });
   $(".paramFileButton").each(function() { $(this).click(FileChange); });
-  $(".paramPlotButton").each(function() { $(this).click(ParamPlot); });
+  $(".paramPlotButton").each(function() { $(this).click(ParamPlotButton); });
 
   $(".radio0D").each(function() { $(this).click(Param0D); });
   $(".radio1D").each(function() { $(this).click(Param1D); });
@@ -254,8 +261,14 @@ $(function() {
     $button.click(function(event) {
       var paramName = $(event.target).text();
       var paramInfo = InfoFromField(calcParams, "name", paramName);
-      cppmain.CalcParameter(paramInfo["alias"],
+      var success = cppmain.CalcParameter(paramInfo["alias"],
         paramInfo["expr"], paramInfo["exprVars"]);
+      if (!success) {
+        console.log("FAILED");
+      }
+      else {
+        ParamPlot(paramInfo);
+      }
     });
   }
 });

@@ -22,6 +22,11 @@
                         4100, # unreferenced formal parameter
                         4201, 4152, 4204, 4055, 4090 # C casts in tinyexpr.c
                     ]
+                }],
+                ["OS=='mac'", {
+                    'xcode_settings': {
+                        # TODO add warning handling?
+                    }
                 }]
             ]
         }

@@ -270,21 +270,26 @@ static bool VerifyArray(
   // TODO this possibly still uses non-NAN stuff.
   for (int i = 0; i < (int)array->Length(); i++) {
     Local<v8::Value> ai = Nan::Get(array, i).ToLocalChecked();
-    if (valueTypes[i] == VALUE_INT)
+    if (valueTypes[i] == VALUE_INT) {
       if (!ai->IsInt32())
         return false;
-    else if (valueTypes[i] == VALUE_STR)
+    }
+    else if (valueTypes[i] == VALUE_STR) {
       if (!ai->IsString())
         return false;
-    else if (valueTypes[i] == VALUE_ARRAY)
+    }
+    else if (valueTypes[i] == VALUE_ARRAY) {
       if (!ai->IsArray())
         return false;
-    else if (valueTypes[i] == VALUE_FUNC)
+    }
+    else if (valueTypes[i] == VALUE_FUNC) {
       if (!ai->IsFunction())
         return false;
-    else if (valueTypes[i] == VALUE_OBJ)
+    }
+    else if (valueTypes[i] == VALUE_OBJ) {
       if (!ai->IsObject())
         return false;
+    }
   }
 
   return true;

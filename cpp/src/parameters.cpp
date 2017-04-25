@@ -89,11 +89,11 @@ public:
           }
           else {
             if (coordTypes != param.coordTypes) {
-              printf("ERROR (USR @ %s): coord type mismatch\n", alias);
+              DEBUGMsg("ERROR (USR @ %s): coord type mismatch\n", alias);
               return;
             }
             else if (points != param.points) {
-              printf("ERROR (USR @ %s): data points mismatch\n", alias);
+              DEBUGMsg("ERROR (USR @ %s): data points mismatch\n", alias);
               return;
             }
             else {
@@ -130,7 +130,7 @@ public:
             indexMaps.insert(decltype(indexMaps)::value_type(alias, indexMap));
           }
           else {
-            printf("ERROR (USR @ %s): coord type mismatch\n", alias);
+            DEBUGMsg("ERROR (USR @ %s): coord type mismatch\n", alias);
             return;
           }
         }
@@ -188,7 +188,7 @@ static std::vector<double> ReadLineDoubles(char* line)
     char* endptr = start;
     double value = strtod(start, &endptr);
     if (endptr == start || *endptr != '\0') {
-      printf("    LINE ERROR (USR): Malformed number \"%s\"\n", start);
+      DEBUGMsg("    LINE ERROR (USR): Malformed number \"%s\"\n", start);
       return std::vector<double>();
     }
 
@@ -223,8 +223,8 @@ static void InsertOrReplaceRawParam(
 
 void ClearData(const char* alias)
 {
-  printf("DBG: parameter: %s\n", alias);
-  printf("     data cleared\n");
+  DEBUGMsg("DBG: parameter: %s\n", alias);
+  DEBUGMsg("     data cleared\n");
 
   if (rawParams.find(alias) != rawParams.end())
     rawParams.erase(alias);
@@ -238,10 +238,10 @@ bool LoadData(
 {
   const int BUF_SIZE = 256;
 
-  printf("DBG: parameter: %s\n", alias);
-  printf("     dimension: %d\n", dim);
-  printf("     coords:    %d, %d\n", coordTypes[0], coordTypes[1]);
-  printf("     filepath:  %s\n", path);
+  DEBUGMsg("DBG: parameter: %s\n", alias);
+  DEBUGMsg("     dimension: %d\n", dim);
+  DEBUGMsg("     coords:    %d, %d\n", coordTypes[0], coordTypes[1]);
+  DEBUGMsg("     filepath:  %s\n", path);
   FILE* fp = fopen(path, "r");
   if (fp == NULL)
     return false;
@@ -254,13 +254,13 @@ bool LoadData(
     char* trimmed = TrimWhitespace(buf);
     std::vector<double> lineData = ReadLineDoubles(trimmed);
     if (lineData.empty()) {
-      printf("ERROR (USR @ %s): unable to read line %d\n", alias, lineNumber);
+      DEBUGMsg("ERROR (USR @ %s): unable to read line %d\n", alias, lineNumber);
       return false;
     }
     if ((int)lineData.size() != dim + 1) {
-      printf("    LINE ERROR (USR @ %s): Read %d values, expected %d.\n",
+      DEBUGMsg("    LINE ERROR (USR @ %s): Read %d values, expected %d.\n",
         alias, (int)lineData.size(), dim + 1);
-      printf("ERROR (USR @ %s): unable to read line %d\n", alias, lineNumber);
+      DEBUGMsg("ERROR (USR @ %s): unable to read line %d\n", alias, lineNumber);
       return false;
     }
 
@@ -293,15 +293,15 @@ bool LoadData(
 
 bool LoadData(const char* alias, const char* valueStr)
 {
-  printf("DBG: parameter: %s\n", alias);
-  printf("     dimension: 0\n");
-  printf("     coords:    -1, -1\n");
-  printf("     value string: %s\n", valueStr);
+  DEBUGMsg("DBG: parameter: %s\n", alias);
+  DEBUGMsg("     dimension: 0\n");
+  DEBUGMsg("     coords:    -1, -1\n");
+  DEBUGMsg("     value string: %s\n", valueStr);
 
   char* endptr = (char*)valueStr;
   double value = strtod(valueStr, &endptr);
   if (endptr == valueStr || *endptr != '\0') {
-    printf("ERROR (USR @ %s): Malformed number \"%s\"\n", alias, valueStr);
+    DEBUGMsg("ERROR (USR @ %s): Malformed number \"%s\"\n", alias, valueStr);
     return false;
   }
 
@@ -317,21 +317,21 @@ bool Calculate(
   const char* alias,
   const char* expr, std::vector<std::string> exprVars)
 {
-  printf("DBG: calculating %s\n", alias);
-  printf("     expression: %s\n", expr);
-  printf("     exprVars: %s\n", exprVars[0].c_str());
+  DEBUGMsg("DBG: calculating %s\n", alias);
+  DEBUGMsg("     expression: %s\n", expr);
+  DEBUGMsg("     exprVars: %s\n", exprVars[0].c_str());
   for (int i = 1; i < (int)exprVars.size(); i++) {
-    printf("               %s\n", exprVars[i].c_str());
+    DEBUGMsg("               %s\n", exprVars[i].c_str());
   }
 
   for (std::string var : exprVars) {
     if (rawParams.find(var) == rawParams.end()) {
-      printf("ERROR (USR @ %s): parameter not loaded\n", var.c_str());
+      DEBUGMsg("ERROR (USR @ %s): parameter not loaded\n", var.c_str());
       return false;
     }
   }
   if (!paramLinker.valid) {
-    printf("ERROR (USR): parameters not linked\n");
+    DEBUGMsg("ERROR (USR): parameters not linked\n");
     return false;
   }
 
@@ -342,7 +342,7 @@ bool Calculate(
     vars[i].address = varValues + i;
     vars[i].type = TE_VARIABLE;
     vars[i].context = 0;
-    printf("var, NAME %s, addr %p, type %d\n", vars[i].name, vars[i].address, vars[i].type);
+    DEBUGMsg("var, NAME %s, addr %p, type %d\n", vars[i].name, vars[i].address, vars[i].type);
   }
   int error;
   te_expr* expression = te_compile(expr, vars, (int)exprVars.size(), &error);
@@ -435,7 +435,7 @@ public:
     {
       if (currentDim == 0)
       {
-        printf("DBG: 1D, no previous points\n");
+        DEBUGMsg("DBG: 1D, no previous points\n");
         this->coordTypes[0] = coordTypes[0];
         // TODO make this a straight copy (must not pass values in points first)
         for (const std::vector<double>& point : points)
@@ -445,30 +445,30 @@ public:
       {
         if (this->coordTypes[0] == coordTypes[0])
         {
-          printf("DBG: 1D, existing 1D points, same coords\n");
+          DEBUGMsg("DBG: 1D, existing 1D points, same coords\n");
           if (coords1D.size() != points.size())
           {
-            printf("ERROR (USR): Number of new points doesn't match previous data.\n.");
+            DEBUGMsg("ERROR (USR): Number of new points doesn't match previous data.\n.");
             return false;
           }
           for (int i = 0; i < (int)coords1D.size(); i++)
           {
             if (coords1D[i] != points[i][0])
             {
-              printf("ERROR (USR): New data points don't match previous data.\n.");
+              DEBUGMsg("ERROR (USR): New data points don't match previous data.\n.");
               return false;
             }
           }
         }
         else
         {
-          printf("DBG: 1D, existing 1D points, different coords (convert)\n");
-          printf("DBG: UNIMPLEMENTED\n");
+          DEBUGMsg("DBG: 1D, existing 1D points, different coords (convert)\n");
+          DEBUGMsg("DBG: UNIMPLEMENTED\n");
         }
       }
       else if (currentDim == 2)
       {
-        printf("DBG: 1D, existing 2D points\n");
+        DEBUGMsg("DBG: 1D, existing 2D points\n");
         int coord;
         if (this->coordTypes[0] == coordTypes[0])
           coord = 0;
@@ -476,7 +476,7 @@ public:
           coord = 1;
         else
         {
-          printf("ERROR (USR): Input coordinate doesn't match existing data.\n");
+          DEBUGMsg("ERROR (USR): Input coordinate doesn't match existing data.\n");
           return false;
         }
 
@@ -484,12 +484,12 @@ public:
         {
           if (coords2D.size() != points.size())
           {
-            printf("ERROR (USR): Number of new points doesn't match previous data.\n.");
+            DEBUGMsg("ERROR (USR): Number of new points doesn't match previous data.\n.");
             return false;
           }
           if (coords2D[i][coord] != points[i][coord])
           {
-            printf("ERROR (USR): New data points don't match previous data.\n.");
+            DEBUGMsg("ERROR (USR): New data points don't match previous data.\n.");
             return false;
           }
         }
@@ -499,7 +499,7 @@ public:
     {
       if (currentDim == 0)
       {
-        printf("DBG: 2D, no previous points\n");
+        DEBUGMsg("DBG: 2D, no previous points\n");
         this->coordTypes[0] = coordTypes[0];
         this->coordTypes[1] = coordTypes[1];
         for (const std::vector<double>& point : points)
@@ -510,36 +510,36 @@ public:
       }
       else if (currentDim == 1)
       {
-        printf("DBG: 2D, existing 1D points (add stuff)\n");
+        DEBUGMsg("DBG: 2D, existing 1D points (add stuff)\n");
         if (this->coordTypes[0] != coordTypes[0]
           && this->coordTypes[0] != coordTypes[1])
         {
           // TODO more info on these errors
-          printf("ERROR (USR): Input coordinates don't match existing data.\n");
+          DEBUGMsg("ERROR (USR): Input coordinates don't match existing data.\n");
           return false;
         }
-        printf("UNIMPLEMENTED\n");
+        DEBUGMsg("UNIMPLEMENTED\n");
       }
       else if (currentDim == 2)
       {
-        printf("DBG: 2D, existing 2D points\n");
+        DEBUGMsg("DBG: 2D, existing 2D points\n");
         if (this->coordTypes[0] != coordTypes[0]
           || this->coordTypes[1] != coordTypes[1])
         {
           // TODO more info on these errors
-          printf("ERROR (USR): Input coordinates don't match existing data.\n");
+          DEBUGMsg("ERROR (USR): Input coordinates don't match existing data.\n");
           return false;
         }
         if (coords2D.size() != points.size())
         {
-          printf("ERROR (USR): Number of new points doesn't match previous data.\n.");
+          DEBUGMsg("ERROR (USR): Number of new points doesn't match previous data.\n.");
           return false;
         }
         for (int i = 0; i < (int)coords2D.size(); i++)
         {
           if (coords2D[i][0] != points[i][0] || coords2D[i][1] != points[i][1])
           {
-            printf("ERROR (USR): New data points don't match previous data.\n.");
+            DEBUGMsg("ERROR (USR): New data points don't match previous data.\n.");
             return false;
           }
         }

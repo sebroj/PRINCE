@@ -26,6 +26,8 @@ enum ValueTypes
   VALUE_OBJ
 };
 
+static Persistent<v8::Function>* consoleLog = nullptr;
+
 static bool VerifyCbInfo(
   const char* funcName,
   const FunctionCallbackInfo<v8::Value>& cbInfo,
@@ -214,6 +216,17 @@ NAN_METHOD(Setup)
   }
 }
 
+NAN_METHOD(DEBUGSetup)
+{
+  const FunctionCallbackInfo<v8::Value> &cbInfo = info;
+  std::vector<ValueTypes> cbInfoTypes(
+    { VALUE_FUNC });
+  if (!VerifyCbInfo(__FUNCTION__, cbInfo, cbInfoTypes))
+    return;
+
+  consoleLog = new Persistent<v8::Function>(cbInfo[0].As<v8::Function>());
+}
+
 static bool VerifyCbInfo(
   const char* funcName,
   const FunctionCallbackInfo<v8::Value>& cbInfo,
@@ -313,9 +326,36 @@ void DEBUGError(const char* format, ...)
     ThrowError("ERROR (DBG): received error, couldn't get message (the irony)");
 
   if ((cx + cx2) >= MSG_MAX_LENGTH)
-    printf("WARNING (DBG): error message too long, truncated\n");
+    DEBUGMsg("WARNING (DBG): error message too long, truncated\n");
 
   ThrowError(msg);
+}
+
+void DEBUGMsg(const char* format, ...)
+{
+  const int MSG_MAX_LENGTH = 1024;
+  const char* MSG_PREFIX = "";
+  char msg[MSG_MAX_LENGTH];
+
+  int cx = snprintf(msg, MSG_MAX_LENGTH, "%s", MSG_PREFIX);
+  if (cx < 0)
+    ThrowError("ERROR (DBG): couldn't get debug message");
+
+  va_list args;
+  va_start(args, format);
+  int cx2 = vsnprintf(msg + cx, MSG_MAX_LENGTH - cx, format, args);
+  va_end(args);
+  if (cx2 < 0)
+    ThrowError("ERROR (DBG): couldn't get debug message");
+
+  if ((cx + cx2) >= MSG_MAX_LENGTH)
+    DEBUGMsg("WARNING (DBG): debug message too long, truncated\n");
+
+  Local<v8::Function> func = New<v8::Function>(*consoleLog);
+  Local<v8::Object> recv = New<v8::Object>();
+  const int argc = 1;
+  Local<v8::Value> argv[argc] = { New<v8::String>(msg).ToLocalChecked() };
+  Call(func, recv, argc, argv);
 }
 
 NAN_MODULE_INIT(Init)
@@ -335,6 +375,9 @@ NAN_MODULE_INIT(Init)
   Set(target,
     New<v8::String>("Setup").ToLocalChecked(),
     New<v8::FunctionTemplate>(Setup)->GetFunction());
+  Set(target,
+    New<v8::String>("DEBUGSetup").ToLocalChecked(),
+    New<v8::FunctionTemplate>(DEBUGSetup)->GetFunction());
 }
 
 NODE_MODULE(main, Init)

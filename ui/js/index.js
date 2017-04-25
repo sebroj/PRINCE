@@ -162,6 +162,7 @@ $(function() {
   console.log("Chrome version: " + process.versions.chrome);
   console.log("Electron version: " + process.versions.electron);
 
+  cppmain.DEBUGSetup(console.log);
   LoadFormats("ui/formats.json");
 
   // Initialize chrome tabs

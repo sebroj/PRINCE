@@ -6,3 +6,6 @@
 // Sends a debug/assert error message to Node.
 // Arguments are formatted according to C's printf standard.
 void DEBUGError(const char* format, ...);
+
+// Sends a debug message to Node.
+void DEBUGMsg(const char* format, ...);

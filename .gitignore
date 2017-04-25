@@ -2,6 +2,7 @@ node_modules/
 npm-debug.log
 .DS_Store
 extern/MathJax
+.vscode
 
 # Ignore build folder for native C++ code, as it might be platform-specific.
 cpp/build

@@ -4,7 +4,14 @@
 // Main script for index.html
 
 // Load native C++ module.
-const cppmain = require("../cpp/build/Release/main");
+let cppmain;
+try {
+  cppmain = require("../cpp/build/Release/main");
+}
+catch(err) {
+  cppmain = require("../cpp/build/Debug/main");
+}
+//let cppmain = require("../cpp/build/Debug/main");
 
 // Chrome-style tabs global variable
 let chromeTabs = null;

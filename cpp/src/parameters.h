@@ -23,7 +23,7 @@ bool LoadData(const char* alias, const char* valueStr);
 
 bool Calculate(
   const char* alias,
-  const char* expr, std::vector<std::string> exprVars);
+  const char* exprStr, std::vector<std::string> exprVars);
 
 const std::vector<std::vector<double>>* GetPoints(const char* alias);
 

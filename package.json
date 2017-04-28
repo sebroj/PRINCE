@@ -15,7 +15,8 @@
   "main": "main.js",
   "scripts": {
     "start": "./node_modules/.bin/electron .",
-    "build-cpp": "node ./cpp/build_cpp.js",
+    "build-cpp": "node ./cpp/compile_cpp.js",
+    "quickbuild-cpp": "node ./cpp/compile_cpp.js quick",
     "package": "echo UNIMPLEMENTED"
   },
   "dependencies": {

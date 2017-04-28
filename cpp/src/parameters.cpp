@@ -4,7 +4,9 @@
 #include <map>
 
 #include "node_main.h"
-#include "extern/tinyexpr/tinyexpr.h"
+#include "exprtk_lite.h"
+
+#include "gsl/gsl_sf_bessel.h"
 
 // TODO all user errors have been labeled as "ERROR (USR): message"
 // centralize this logging system. Messages will be improved in future revision.
@@ -230,6 +232,11 @@ void ClearData(const char* alias)
     rawParams.erase(alias);
 
   paramLinker.Update();
+
+  // TODO debug code
+	double x = 5.0;
+	double y = gsl_sf_bessel_J0(x);
+	DEBUGMsg("J0(%g) = %.18e\n\n", x, y);
 }
 
 bool LoadData(
@@ -315,10 +322,10 @@ bool LoadData(const char* alias, const char* valueStr)
 
 bool Calculate(
   const char* alias,
-  const char* expr, std::vector<std::string> exprVars)
+  const char* exprStr, std::vector<std::string> exprVars)
 {
   DEBUGMsg("DBG: calculating %s\n", alias);
-  DEBUGMsg("     expression: %s\n", expr);
+  DEBUGMsg("     expression: %s\n", exprStr);
   DEBUGMsg("     exprVars: %s\n", exprVars[0].c_str());
   for (int i = 1; i < (int)exprVars.size(); i++) {
     DEBUGMsg("               %s\n", exprVars[i].c_str());
@@ -335,23 +342,17 @@ bool Calculate(
     return false;
   }
 
+  SymbolTable symbolTable;
   double* varValues = new double[exprVars.size()];
-  te_variable* vars = new te_variable[exprVars.size()];
-  for (int i = 0; i < (int)exprVars.size(); i++) {
-    vars[i].name = exprVars[i].c_str();
-    vars[i].address = varValues + i;
-    vars[i].type = TE_VARIABLE;
-    vars[i].context = 0;
-    DEBUGMsg("var, NAME %s, addr %p, type %d\n", vars[i].name, vars[i].address, vars[i].type);
-  }
-  int error;
-  te_expr* expression = te_compile(expr, vars, (int)exprVars.size(), &error);
-  if (!expression) {
-    DEBUGError("failed to compile expression %s, error at %d", expr, error);
-    return false;
-  }
-  else if (error != 0) {
-    DEBUGError("expression %s compiled, but non-zero error %d", expr, error);
+  for (int i = 0; i < (int)exprVars.size(); i++)
+    symbolTable.AddVariable(exprVars[i], varValues[i]);
+  
+  Expression expr;
+  expr.RegisterSymbolTable(symbolTable);
+
+  Parser parser;
+  if (!parser.Compile(exprStr, expr)) {
+    DEBUGMsg("failed to compile expression %s", exprStr);
     return false;
   }
 
@@ -364,12 +365,10 @@ bool Calculate(
         paramLinker.indexMaps.find(exprVars[v])->second;
       varValues[v] = param.values[indexMap[p]];
     }
-    values[p] = te_eval(expression);
+    values[p] = expr.Value();
   }
-  te_free(expression);
   delete[] varValues;
-  delete[] vars;
-
+  
   ParameterRaw rawParam(paramLinker.maxDim, paramLinker.coordTypes,
     paramLinker.points, values);
   InsertOrReplaceRawParam(alias, rawParam);

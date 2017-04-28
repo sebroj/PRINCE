@@ -5,26 +5,41 @@
             "sources": [
                 "src/node_main.cpp",
                 "src/parameters.cpp",
-                "src/extern/tinyexpr/tinyexpr.c"
+                "extern/exprtk/src/exprtk.cpp"
             ],
             "include_dirs": [
-                "<!(node -e \"require('nan')\")"
+                "<!(node -e \"require('nan')\")",
+                "src",
+                "extern/gsl/include",
+                "extern/exprtk/include"
             ],
             "conditions": [
                 ["OS=='win'", {
-                    'msvs_settings': {
-                        'VCCLCompilerTool': {
-                            'WarningLevel': 4,
-                            'WarnAsError': 'true',
+                    "msvs_settings": {
+                        "VCCLCompilerTool": {
+                            "ExceptionHandling": 1,
+                            "WarningLevel": 4,
+                            "WarnAsError": "true",
+                            "AdditionalOptions": [
+                                "/bigobj"
+                            ]
+                        },
+                        "VCLinkerTool": {
+                            "AdditionalDependencies": [
+                                "gsl.lib"
+                            ],
+                            "AdditionalLibraryDirectories": [
+                                "<(module_root_dir)/extern/gsl/lib"
+                            ]
                         }
                     },
-                    'msvs_disabled_warnings': [
+                    "msvs_disabled_warnings": [
                         4100, # unreferenced formal parameter
-                        4201, 4152, 4204, 4055, 4090 # C casts in tinyexpr.c
+                        4541, 4267, 4996 # things in exprtk (ugh)
                     ]
                 }],
                 ["OS=='mac'", {
-                    'xcode_settings': {
+                    "xcode_settings": {
                         # TODO add warning handling?
                     }
                 }]

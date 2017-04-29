@@ -5,6 +5,7 @@
             "sources": [
                 "src/node_main.cpp",
                 "src/parameters.cpp",
+                "src/param_io.cpp",
                 "extern/exprtk/src/exprtk.cpp"
             ],
             "include_dirs": [

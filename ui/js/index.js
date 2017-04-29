@@ -4,6 +4,7 @@
 // Main script for index.html
 
 // Load native C++ module.
+// TODO make this debug/release pick more reliable
 let cppmain;
 try {
   cppmain = require("../cpp/build/Release/main");
@@ -11,7 +12,29 @@ try {
 catch(err) {
   cppmain = require("../cpp/build/Debug/main");
 }
-//let cppmain = require("../cpp/build/Debug/main");
+
+let propellants = [
+  {
+    "name": "Helium",
+    "mi": 6.6465e-27
+  },
+  {
+    "name": "Neon",
+    "mi": 3.3509e-26
+  },
+  {
+    "name": "Argon",
+    "mi": 6.6335e-26
+  },
+  {
+    "name": "Krypton",
+    "mi": 1.3915e-25
+  },
+  {
+    "name": "Xenon",
+    "mi": 2.1802e-25
+  }
+];
 
 // Chrome-style tabs global variable
 let chromeTabs = null;
@@ -33,7 +56,11 @@ function TabIdToAlias(id)
 /* Toggle between hiding and showing the dropdown content */
 function ToggleDropdown()
 {
-  $("#dispDropdown").toggle();
+  $("#dispRelDropdown").toggle();
+}
+function TogglePropellantDropdown()
+{
+  $("#propellantDropdown").toggle();
 }
 
 function ParamPlotButton(event)
@@ -43,6 +70,8 @@ function ParamPlotButton(event)
   ParamPlot(paramInfo);
 }
 
+// TODO possibly factor these two dropdown functions?
+//      or even do a general dropdown thingy?
 /* Dispersion relation has been selected. */
 function DispSelect(event)
 {
@@ -50,7 +79,7 @@ function DispSelect(event)
   var dispRelInfo = InfoFromField(dispRels, "name", dispRelName);
 
   // Update dropdown button text.
-  $("#dropdownButton").text(dispRelName);
+  $("#dispRelDropdownButton").text(dispRelName);
 
   // Reorder plasma parameters.
   for (let i = 0; i < plasmaParams.length; i++)
@@ -58,6 +87,22 @@ function DispSelect(event)
 
   for (let i = 0; i < dispRelInfo["req"].length; i++)
     $("#" + dispRelInfo["req"][i]).appendTo($("#required"));
+}
+function PropellantSelect(event)
+{
+  var propellantName = $(event.target).text();
+  var propellantInfo = InfoFromField(propellants, "name", propellantName);
+
+  // Update dropdown button text.
+  $("#propellantDropdownButton").text(propellantName);
+
+  Load0D("mi", propellantInfo["mi"].toString());
+}
+
+function Solve()
+{
+  console.log("SOLVE");
+  console.log("Unimplemented...");
 }
 
 function FileChange(event)
@@ -118,9 +163,9 @@ function FileChange(event)
   }
 }
 
-function Load0D(paramInfo, valueStr)
+function Load0D(alias, valueStr)
 {
-  cppmain.LoadParameter(paramInfo["alias"], valueStr, 0, [-1, -1]);
+  cppmain.LoadParameter(alias, valueStr, 0, [-1, -1]);
 }
 
 // TODO don't reset param if dimension is unchanged
@@ -238,12 +283,24 @@ $(function() {
     let dispRelName = dispRels[i]["name"];
     let $dispRelButton = $("<button>" + dispRelName + "</button>")
       .addClass("dispButton")
-      .appendTo("#dispDropdown");
+      .appendTo("#dispRelDropdown");
+  }
+  
+  // Add propellant species.
+  for (let i = 0; i < propellants.length; i++) {
+    let propellantName = propellants[i]["name"];
+    let $propellantButton = $("<button>" + propellantName + "</button>")
+      .addClass("propellantButton")
+      .appendTo("#propellantDropdown");
   }
   // Add click callbacks.
-  $("#dropdownButton").click(ToggleDropdown);
+  $("#dispRelDropdownButton").click(ToggleDropdown);
+  $("#propellantDropdownButton").click(TogglePropellantDropdown);
+
+  $("#solveButton").click(Solve);
 
   $(".dispButton").each(function() { $(this).click(DispSelect); });
+  $(".propellantButton").each(function() { $(this).click(PropellantSelect); });
   $(".paramFileButton").each(function() { $(this).click(FileChange); });
   $(".paramPlotButton").each(function() { $(this).click(ParamPlotButton); });
 
@@ -258,7 +315,7 @@ $(function() {
       $paramValueField.blur();
       var param = $(this).closest(".parameter");
       var paramInfo = InfoFromField(plasmaParams, "alias", param.attr("id"));
-      Load0D(paramInfo, $paramValueField.val());
+      Load0D(paramInfo["alias"], $paramValueField.val());
     });
   });
 
@@ -284,6 +341,8 @@ $(function() {
 $(window).click(function(event)
 {
   // Close the dropdown menu if the user clicks outside of it.
-  if (!$(event.target).is("#dropdownButton"))
-    $(".dropdown-content").each(function() { $(this).hide(); });
+  if (!$(event.target).is("#dispRelDropdownButton"))
+    $("#dispRelDropdown").hide();
+  if (!$(event.target).is("#propellantDropdownButton"))
+    $("#propellantDropdown").hide();
 });

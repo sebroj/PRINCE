@@ -60,7 +60,7 @@ NAN_METHOD(ClearParameter)
     return;
 
   StringConv alias(cbInfo[0]);
-  ClearData(alias.c_str());
+  ClearParam(alias.c_str());
 }
 
 NAN_METHOD(LoadParameter)
@@ -94,9 +94,9 @@ NAN_METHOD(LoadParameter)
 
   bool success = false;
   if (dataDim == 0)
-    success = LoadData(alias.c_str(), arg2.c_str());
+    success = LoadParam(alias.c_str(), arg2.c_str());
   else
-    success = LoadData(alias.c_str(), arg2.c_str(), dataDim, coordTypes);
+    success = LoadParam(alias.c_str(), arg2.c_str(), dataDim, coordTypes);
 
   cbInfo.GetReturnValue().Set(success);
 }
@@ -211,11 +211,12 @@ NAN_METHOD(Setup)
     StringConv alias(Nan::Get(constant, aliasKey).ToLocalChecked());
     StringConv value(Nan::Get(constant, valueKey).ToLocalChecked());
 
-    if (!LoadData(alias.c_str(), value.c_str()))
+    if (!LoadParam(alias.c_str(), value.c_str()))
       DEBUGError("couldn't import constant #%d", i);
   }
 }
 
+/* Setup debug hooks, such as the console.log callback. */
 NAN_METHOD(DEBUGSetup)
 {
   const FunctionCallbackInfo<v8::Value> &cbInfo = info;
@@ -224,6 +225,7 @@ NAN_METHOD(DEBUGSetup)
   if (!VerifyCbInfo(__FUNCTION__, cbInfo, cbInfoTypes))
     return;
 
+  // console.log callback
   consoleLog = new Persistent<v8::Function>(cbInfo[0].As<v8::Function>());
 }
 

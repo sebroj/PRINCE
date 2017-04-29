@@ -3,9 +3,13 @@ body {
   padding: 0 !important;
 }
 
-/* ---------- DISPERSION RELATION SELECT ---------- */
-/* Dropdown Button */
-#dropdownButton {
+/* The container <div> - needed to position the dropdown content */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+/* ---------- DISPERSION RELATION DROPDOWN ---------- */
+#dispRelDropdownButton {
     background-color: #F9F9F9;
     padding: 10px;
     font-size: 14px;
@@ -13,27 +17,22 @@ body {
     border-width: 2px;
     border-color: #444444;
     cursor: pointer;
+    width: 350px;
 }
-/* Dropdown button on hover & focus */
-#dropdownButton:hover, #dropdownButton:focus {
+#dispRelDropdownButton:hover, #dispRelDropdownButton:focus {
     background-color: #EEEEEE;
 }
 
-/* The container <div> - needed to position the dropdown content */
-.dropdown {
-    position: relative;
-    display: inline-block;
-}
-/* Dropdown Content (Hidden by Default) */
-.dropdown-content {
+/* Content (Hidden by Default) */
+#dispRelDropdown {
     display: none;
     position: absolute;
-    width: 300px;
+    width: 350px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 1;
 }
 /* Buttons inside the dropdown */
-.dropdown-content button {
+#dispRelDropdown button {
     width: 100%;
     padding: 10px;
     display: block;
@@ -43,7 +42,44 @@ body {
     cursor: pointer;
 }
 /* Change color of dropdown links on hover */
-.dropdown-content button:hover {
+#dispRelDropdown button:hover {
+  background-color: #DDDDDD
+}
+/* ---------- PROPELLANT SPECIES DROPDOWN ---------- */
+#propellantDropdownButton {
+    background-color: #F9F9F9;
+    padding: 10px;
+    font-size: 14px;
+    border-style: solid;
+    border-width: 2px;
+    border-color: #444444;
+    cursor: pointer;
+    width: 100px;
+}
+#propellantDropdownButton:hover, #propellantDropdownButton:focus {
+    background-color: #EEEEEE;
+}
+
+/* Content (Hidden by Default) */
+#propellantDropdown {
+    display: none;
+    position: absolute;
+    width: 100px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+/* Buttons inside the dropdown */
+#propellantDropdown button {
+    width: 100%;
+    padding: 10px;
+    display: block;
+    background-color: #EEEEEE;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+}
+/* Change color of dropdown links on hover */
+#propellantDropdown button:hover {
   background-color: #DDDDDD
 }
 
@@ -73,4 +109,12 @@ body {
 .paramFilename {
   float:right;
   margin-left:5px;
+}
+
+/* ---------- GENERAL STUFF ---------- */
+.generalContainer {
+  padding: 10px;
+  border-style: solid;
+  border-width: 2px;
+  border-color: #444444;
 }

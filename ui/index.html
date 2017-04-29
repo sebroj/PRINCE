@@ -41,17 +41,34 @@
       <div id="solverSettings"></div>
       <div class="input" style="text-align: center">
         <h2>Solver Settings</h2>
-        <p>Dispersion Relation</p>
         <!-- Dispersion relation dropdown list -->
+        <p>Dispersion Relation</p>
         <div class="dropdown">
-          <button id="dropdownButton">-- Select --</button>
-          <div id="dispDropdown" class="dropdown-content">
+          <button id="dispRelDropdownButton">-- Select --</button>
+          <div id="dispRelDropdown">
             <!-- Dispersion relation buttons created here by index.js -->
           </div>
         </div>
+        <p>Search Domain Limits</p>
+        <div class="generalContainer" style="display: inline-block;">
+          <input type="radio" name="sdl" id="sdlAutomatic"> Automatic
+          <input type="radio" name="sdl" id="sdlUser" checked> User specified
+        </div>
+        <div class="generalContainer" id="sdlUserOptions">
+        </div>
+        <p>Iteration Variable Range</p>
+        <p>Resolution</p>
         <br><br>
         <button id="solveButton">Solve</button>
         <h2>Plasma Parameters</h2>
+        <!-- Propellant species dropdown list -->
+        <p>Propellant Species</p>
+        <div class="dropdown">
+          <button id="propellantDropdownButton">-- Select --</button>
+          <div id="propellantDropdown">
+            <!-- Propellant species buttons created here by index.js -->
+          </div>
+        </div>
         <div id="required">
           <p>Required</p>
         </div>

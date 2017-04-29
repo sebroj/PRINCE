@@ -25,6 +25,7 @@ function LoadFormats(filePath)
   plasmaParams = formats["PlasmaParameters"];
   dispRels = formats["DispersionRelations"];
   constants = formats["Constants"];
+  var otherParams = formats["OtherParameters"];
   calcParams = formats["CalculatedParameters"];
 
   // Check all formats.json data for correctness
@@ -38,10 +39,10 @@ function LoadFormats(filePath)
   CheckNoDuplicates(calcParams, "alias");
   // - Existence of dispersion relation required parameters.
   for (let i = 0; i < dispRels.length; i++) {
-    var dispRel = dispRels[i];
+    let dispRel = dispRels[i];
     for (let j = 0; j < dispRel["req"].length; j++) {
-      var req = dispRel["req"][j];
-      var exists = false;
+      let req = dispRel["req"][j];
+      let exists = false;
       for (let p = 0; p < plasmaParams.length; p++) {
         if (req === plasmaParams[p]["alias"]) {
           exists = true;
@@ -57,10 +58,10 @@ function LoadFormats(filePath)
   }
   // - Existence of calculated parameter expression variables.
   for (let i = 0; i < calcParams.length; i++) {
-    var calcParam = calcParams[i];
+    let calcParam = calcParams[i];
     for (let j = 0; j < calcParam["exprVars"].length; j++) {
-      var exprVar = calcParam["exprVars"][j];
-      var exists = false;
+      let exprVar = calcParam["exprVars"][j];
+      let exists = false;
       for (let k = 0; k < plasmaParams.length; k++) {
         if (exprVar === plasmaParams[k]["alias"]) {
           exists = true;
@@ -69,6 +70,12 @@ function LoadFormats(filePath)
       }
       for (let k = 0; k < constants.length; k++) {
         if (exprVar === constants[k]["alias"]) {
+          exists = true;
+          break;
+        }
+      }
+      for (let k = 0; k < otherParams.length; k++) {
+        if (exprVar === otherParams[k]["alias"]) {
           exists = true;
           break;
         }

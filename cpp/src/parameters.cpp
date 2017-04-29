@@ -2,11 +2,11 @@
 
 #include <cstdio>
 #include <map>
+#include "gsl/gsl_sf_bessel.h"
 
 #include "node_main.h"
+#include "param_io.h"
 #include "exprtk_lite.h"
-
-#include "gsl/gsl_sf_bessel.h"
 
 // TODO all user errors have been labeled as "ERROR (USR): message"
 // centralize this logging system. Messages will be improved in future revision.
@@ -38,8 +38,6 @@ public:
   std::array<CoordType, 2> coordTypes;
   std::map<std::string, std::vector<int>> indexMaps;
   std::vector<std::vector<double>> points;
-
-  // Have some sort of mapping here for params of different dimensions?
 
   ParameterLinker()
     : valid(false)
@@ -148,68 +146,6 @@ public:
 };
 ParameterLinker paramLinker;
 
-// Trim leading and trailing whitespace from str IN PLACE.
-// Return a null-terminated substring of str with trimmed whitespace.
-static char* TrimWhitespace(char* str)
-{
-  // Leading whitespace
-  while (isspace(*str))
-    str++;
-
-  // All spaces
-  if (*str == '\0')
-    return str;
-
-  // Trailing whitespace
-  char* end = str + strlen(str) - 1;
-  while (end > str && isspace(*end))
-    end--;
-  *(end + 1) = 0;
-
-  return str;
-}
-
-// Read null-terminated string line as a list of comma-separated doubles.
-// Return a vector of the read doubles.
-static std::vector<double> ReadLineDoubles(char* line)
-{
-  std::vector<double> data;
-
-  char* start = line;
-  char* delim = line;
-  bool nullChar = false;
-  while (!nullChar) {
-    while (*delim != ',' && *delim != '\0')
-      delim++;
-
-    if (*delim == '\0')
-      nullChar = true;
-    *delim = '\0';
-
-    start = TrimWhitespace(start);
-    char* endptr = start;
-    double value = strtod(start, &endptr);
-    if (endptr == start || *endptr != '\0') {
-      DEBUGMsg("    LINE ERROR (USR): Malformed number \"%s\"\n", start);
-      return std::vector<double>();
-    }
-
-    data.push_back(value);
-    start = ++delim;
-  }
-
-  return data;
-}
-
-static bool CompareData(
-  const std::vector<double>& d1,
-  const std::vector<double>& d2)
-{
-  if (d1[0] == d2[0] && d1.size() > 2)
-    return d1[1] <= d2[1];
-  return d1[0] < d2[0];
-}
-
 static void InsertOrReplaceRawParam(
   const char* alias,
   const ParameterRaw& rawParam)
@@ -223,7 +159,7 @@ static void InsertOrReplaceRawParam(
   paramLinker.Update();
 }
 
-void ClearData(const char* alias)
+void ClearParam(const char* alias)
 {
   DEBUGMsg("DBG: parameter: %s\n", alias);
   DEBUGMsg("     data cleared\n");
@@ -239,58 +175,19 @@ void ClearData(const char* alias)
 	DEBUGMsg("J0(%g) = %.18e\n\n", x, y);
 }
 
-bool LoadData(
+bool LoadParam(
   const char* alias, const char* path,
   int dim, std::array<CoordType, 2> coordTypes)
 {
-  const int BUF_SIZE = 256;
-
   DEBUGMsg("DBG: parameter: %s\n", alias);
   DEBUGMsg("     dimension: %d\n", dim);
   DEBUGMsg("     coords:    %d, %d\n", coordTypes[0], coordTypes[1]);
   DEBUGMsg("     filepath:  %s\n", path);
-  FILE* fp = fopen(path, "r");
-  if (fp == NULL)
-    return false;
-
-  // Read raw data line by line.
-  std::vector<std::vector<double>> data;
-  char buf[BUF_SIZE];
-  int lineNumber = 1;
-  while (fgets(buf, BUF_SIZE, fp)) {
-    char* trimmed = TrimWhitespace(buf);
-    std::vector<double> lineData = ReadLineDoubles(trimmed);
-    if (lineData.empty()) {
-      DEBUGMsg("ERROR (USR @ %s): unable to read line %d\n", alias, lineNumber);
-      return false;
-    }
-    if ((int)lineData.size() != dim + 1) {
-      DEBUGMsg("    LINE ERROR (USR @ %s): Read %d values, expected %d.\n",
-        alias, (int)lineData.size(), dim + 1);
-      DEBUGMsg("ERROR (USR @ %s): unable to read line %d\n", alias, lineNumber);
-      return false;
-    }
-
-    data.push_back(lineData);
-    lineNumber++;
-  }
-
-  // Sort data in the ascending order given by CompareData.
-  std::sort(std::begin(data), std::end(data), CompareData);
-
-  // TODO check if data points are complete (for 2D grid)
-
-  // Separate data into points and values.
+  
   std::vector<std::vector<double>> points;
   std::vector<double> values;
-  for (const std::vector<double>& d : data) {
-    std::vector<double> point;
-    for (int i = 0; i < dim; i++)
-      point.push_back(d[i]);
-
-    points.push_back(point);
-    values.push_back(d[dim]);
-  }
+  if (!LoadData(alias, path, dim, points, values))
+    return false;
 
   ParameterRaw rawParam(dim, coordTypes, points, values);
   InsertOrReplaceRawParam(alias, rawParam);
@@ -298,7 +195,7 @@ bool LoadData(
   return true;
 }
 
-bool LoadData(const char* alias, const char* valueStr)
+bool LoadParam(const char* alias, const char* valueStr)
 {
   DEBUGMsg("DBG: parameter: %s\n", alias);
   DEBUGMsg("     dimension: 0\n");
@@ -402,163 +299,3 @@ void ToRegularGrid(
     out_values.push_back(value);
   }
 }
-
-#if 0
-class DataPoints
-{
-  CoordType coordTypes[2] = { COORD_NONE, COORD_NONE };
-  std::vector<double> coords1D;
-  std::vector<std::array<double, 2>> coords2D; // TODO ew std::array
-
-public:
-  // Processes the new data points given by points.
-  // Points must be sorted in ascending order (first by [0], then by [1], if 2D)
-  bool new_points(
-    const std::vector<std::vector<double>>& points,
-    CoordType coordTypes[2])
-  {
-    if (points.empty())
-    {
-      DEBUGError("new points were empty");
-      return false;
-    }
-    int pointsDim = (int)points[0].size();
-    if (pointsDim != 1 && pointsDim != 2)
-    {
-      DEBUGError("new points aren't 1-D or 2-D");
-      return false;
-    }
-
-    int currentDim = dimension();
-    if (pointsDim == 1)
-    {
-      if (currentDim == 0)
-      {
-        DEBUGMsg("DBG: 1D, no previous points\n");
-        this->coordTypes[0] = coordTypes[0];
-        // TODO make this a straight copy (must not pass values in points first)
-        for (const std::vector<double>& point : points)
-          coords1D.push_back(point[0]);
-      }
-      else if (currentDim == 1)
-      {
-        if (this->coordTypes[0] == coordTypes[0])
-        {
-          DEBUGMsg("DBG: 1D, existing 1D points, same coords\n");
-          if (coords1D.size() != points.size())
-          {
-            DEBUGMsg("ERROR (USR): Number of new points doesn't match previous data.\n.");
-            return false;
-          }
-          for (int i = 0; i < (int)coords1D.size(); i++)
-          {
-            if (coords1D[i] != points[i][0])
-            {
-              DEBUGMsg("ERROR (USR): New data points don't match previous data.\n.");
-              return false;
-            }
-          }
-        }
-        else
-        {
-          DEBUGMsg("DBG: 1D, existing 1D points, different coords (convert)\n");
-          DEBUGMsg("DBG: UNIMPLEMENTED\n");
-        }
-      }
-      else if (currentDim == 2)
-      {
-        DEBUGMsg("DBG: 1D, existing 2D points\n");
-        int coord;
-        if (this->coordTypes[0] == coordTypes[0])
-          coord = 0;
-        else if (this->coordTypes[1] == coordTypes[0])
-          coord = 1;
-        else
-        {
-          DEBUGMsg("ERROR (USR): Input coordinate doesn't match existing data.\n");
-          return false;
-        }
-
-        for (int i = 0; i < (int)coords2D.size(); i++)
-        {
-          if (coords2D.size() != points.size())
-          {
-            DEBUGMsg("ERROR (USR): Number of new points doesn't match previous data.\n.");
-            return false;
-          }
-          if (coords2D[i][coord] != points[i][coord])
-          {
-            DEBUGMsg("ERROR (USR): New data points don't match previous data.\n.");
-            return false;
-          }
-        }
-      }
-    }
-    else if (pointsDim == 2)
-    {
-      if (currentDim == 0)
-      {
-        DEBUGMsg("DBG: 2D, no previous points\n");
-        this->coordTypes[0] = coordTypes[0];
-        this->coordTypes[1] = coordTypes[1];
-        for (const std::vector<double>& point : points)
-        {
-          std::array<double, 2> coord = { { point[0], point[1] } };
-          coords2D.push_back(coord);
-        }
-      }
-      else if (currentDim == 1)
-      {
-        DEBUGMsg("DBG: 2D, existing 1D points (add stuff)\n");
-        if (this->coordTypes[0] != coordTypes[0]
-          && this->coordTypes[0] != coordTypes[1])
-        {
-          // TODO more info on these errors
-          DEBUGMsg("ERROR (USR): Input coordinates don't match existing data.\n");
-          return false;
-        }
-        DEBUGMsg("UNIMPLEMENTED\n");
-      }
-      else if (currentDim == 2)
-      {
-        DEBUGMsg("DBG: 2D, existing 2D points\n");
-        if (this->coordTypes[0] != coordTypes[0]
-          || this->coordTypes[1] != coordTypes[1])
-        {
-          // TODO more info on these errors
-          DEBUGMsg("ERROR (USR): Input coordinates don't match existing data.\n");
-          return false;
-        }
-        if (coords2D.size() != points.size())
-        {
-          DEBUGMsg("ERROR (USR): Number of new points doesn't match previous data.\n.");
-          return false;
-        }
-        for (int i = 0; i < (int)coords2D.size(); i++)
-        {
-          if (coords2D[i][0] != points[i][0] || coords2D[i][1] != points[i][1])
-          {
-            DEBUGMsg("ERROR (USR): New data points don't match previous data.\n.");
-            return false;
-          }
-        }
-      }
-    }
-
-    return true;
-  }
-
-  int dimension()
-  {
-    if (coords1D.empty() && coords2D.empty())
-      return 0;
-    else if (!coords1D.empty() && coords2D.empty())
-      return 1;
-    else if (coords1D.empty() && !coords2D.empty())
-      return 2;
-
-    DEBUGError("both coords1D and coords2D are set");
-    return -1;
-  }
-};
-#endif

@@ -1,4 +1,10 @@
 {
+  "": "This file contains all the information about the PRINCE application.",
+  "": "AKA all kinds of parameters, constants, and dispersion relations.",
+
+  "": "NOTE: I use empty strings as a key for comments in this JSON file.",
+  "": "      All these entries will be ignored by the application.",
+  
   "PlasmaParameters": [
     {
       "name": "Electron Density",
@@ -90,12 +96,6 @@
       "value": 9.11e-31
     },
     {
-      "name": "Ion mass",
-      "symbol": "m_\\text{i}",
-      "alias": "mi",
-      "value": 0.0
-    },
-    {
       "name": "Vacuum permittivity",
       "symbol": "\\varepsilon_0",
       "alias": "eps0",
@@ -118,6 +118,13 @@
       "symbol": "k_B",
       "alias": "kb",
       "value": 1.38e-23
+    }
+  ],
+  "OtherParameters": [
+    {
+      "name": "Ion Mass",
+      "symbol": "m_{i}",
+      "alias": "mi"
     }
   ],
   "CalculatedParameters": [

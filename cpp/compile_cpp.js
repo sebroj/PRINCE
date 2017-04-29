@@ -16,8 +16,11 @@ var exec = require("child_process").exec;
 
 var args = ""
 if (process.argv.length > 2 && process.argv[2] === "quick") {
-  console.log("Quick build...")
-  args = "quick"
+  console.log("Quick build...");
+  args = "quick";
+}
+else {
+  console.log("Complete build...");
 }
 
 if (process.platform == "win32")

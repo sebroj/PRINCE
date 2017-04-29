@@ -14,12 +14,12 @@ enum CoordType
   COORD_Z = 2
 };
 
-void ClearData(const char* alias);
+void ClearParam(const char* alias);
 
-bool LoadData(
+bool LoadParam(
   const char* alias, const char* path,
   int dim, std::array<CoordType, 2> coordTypes);
-bool LoadData(const char* alias, const char* valueStr);
+bool LoadParam(const char* alias, const char* valueStr);
 
 bool Calculate(
   const char* alias,

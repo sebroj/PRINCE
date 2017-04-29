@@ -17,11 +17,11 @@
                 ["OS=='win'", {
                     "msvs_settings": {
                         "VCCLCompilerTool": {
-                            "ExceptionHandling": 1,
-                            "WarningLevel": 4,
-                            "WarnAsError": "true",
+                            "ExceptionHandling": 1, # Enable exceptions (exprtk.cpp)
+                            "WarningLevel": 4,      # Show all warnings
+                            "WarnAsError": "true",  # Treat warnings as compile errors
                             "AdditionalOptions": [
-                                "/bigobj"
+                                "/bigobj"           # Big .obj files (exprtk.cpp)
                             ]
                         },
                         "VCLinkerTool": {
@@ -34,13 +34,13 @@
                         }
                     },
                     "msvs_disabled_warnings": [
-                        4100, # unreferenced formal parameter
-                        4541, 4267, 4996 # things in exprtk (ugh)
+                        4100,               # unreferenced formal parameter
+                        4541, 4267, 4996    # things in exprtk (ugh)
                     ]
                 }],
                 ["OS=='mac'", {
                     "xcode_settings": {
-                        # TODO add warning handling?
+                        # TODO fill this out
                     }
                 }]
             ]

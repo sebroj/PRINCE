@@ -9,47 +9,56 @@
     {
       "name": "Electron Density",
       "symbol": "n_{e}",
-      "alias": "ne"
+      "alias": "ne",
+      "convFactor": 1
     },
     {
       "name": "Electron Temperature",
       "symbol": "T_{e}",
-      "alias": "Te"
+      "alias": "Te",
+      "convFactor": 1.6e-19
     },
     {
       "name": "Neutral Density",
       "symbol": "n_{0}",
-      "alias": "n0"
+      "alias": "n0",
+      "convFactor": 1
     },
     {
       "name": "Electric Potential",
       "symbol": "\\phi",
-      "alias": "phi"
+      "alias": "phi",
+      "convFactor": 1
     },
     {
       "name": "Magnetic Field in \\hat{z}",
       "symbol": "B_{z}",
-      "alias": "Bz"
+      "alias": "Bz",
+      "convFactor": 1e-4
     },
     {
       "name": "Magnetic Field in \\hat{x}",
       "symbol": "B_{x}",
-      "alias": "Bx"
+      "alias": "Bx",
+      "convFactor": 1e-4
     },
     {
       "name": "Magnetic Field in \\hat{y}",
       "symbol": "B_{y}",
-      "alias": "By"
+      "alias": "By",
+      "convFactor": 1e-4
     },
     {
       "name": "Ion Velocity in \\hat{z}",
       "symbol": "u_{0}",
-      "alias": "u0"
+      "alias": "u0",
+      "convFactor": 1
     },
     {
       "name": "Ion Temperature",
       "symbol": "T_{i}",
-      "alias": "Ti"
+      "alias": "Ti",
+      "convFactor": 1.6e-19
     }
   ],
   "DispersionRelations": [
@@ -105,7 +114,7 @@
       "name": "Vacuum permeability",
       "symbol": "\\mu_0",
       "alias": "mu0",
-      "value": 0.0
+      "value": 1.25663e-6
     },
     {
       "name": "Speed of light",

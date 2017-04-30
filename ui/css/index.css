@@ -118,3 +118,7 @@ body {
   border-width: 2px;
   border-color: #444444;
 }
+
+.numField {
+  width: 50px;
+}

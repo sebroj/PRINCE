@@ -38,8 +38,7 @@
       <div id="title" style="text-align: center">
         <h1>PRINCE</h1>
       </div>
-      <div id="solverSettings"></div>
-      <div class="input" style="text-align: center">
+      <div id="solverSettings" style="text-align: center">
         <h2>Solver Settings</h2>
         <!-- Dispersion relation dropdown list -->
         <p>Dispersion Relation</p>
@@ -53,13 +52,42 @@
         <div class="generalContainer" style="display: inline-block;">
           <input type="radio" name="sdl" id="sdlAutomatic"> Automatic
           <input type="radio" name="sdl" id="sdlUser" checked> User specified
-        </div>
-        <div class="generalContainer" id="sdlUserOptions">
+          <br><br>
+          <div style="float:left; margin-right:5px;">
+            Re [/omega]:
+          </div>
+          <input type="text" class="numField" id="omegaMin" value="1e3">
+          -
+          <input type="text" class="numField" id="omegaMax" value="100e3">
         </div>
         <p>Iteration Variable Range</p>
-        <p>Resolution</p>
+        <div class="generalContainer" style="display: inline-block;">
+          <input type="radio" name="iterVar" id="iterVarOmega"> /omega (Hz)
+          <input type="radio" name="iterVar" id="iterVarK" checked> k (/m)
+          <br><br>
+          <input type="text" class="numField" id="iterVarMin" value="2">
+          -
+          <input type="text" class="numField" id="iterVarMax" value="4">
+          <br><br>
+          Resolution:
+          <input type="text" class="numField" id="omegaMax" value="5e-2">
+        </div>
+        <p>Solve for / iterate over:</p>
+        <div class="generalContainer" style="display: inline-block;">
+          <input type="radio" name="chooseK" id="kx" checked> k_{x}
+          <input type="radio" name="chooseK" id="ky"> k_{y}
+          <input type="radio" name="chooseK" id="kz"> k_{z}
+          <br><br>
+          k_{y}
+          <input type="text" class="numField" id="kOther1" value="10">
+          <br><br>
+          k_{z}
+          <input type="text" class="numField" id="kOther2" value="0">
+        </div>
         <br><br>
         <button id="solveButton">Solve</button>
+      </div>
+      <div id="parameters" style="text-align: center">
         <h2>Plasma Parameters</h2>
         <!-- Propellant species dropdown list -->
         <p>Propellant Species</p>
